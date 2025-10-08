@@ -38,8 +38,6 @@ class LearningHub(QWidget):
         self.quote.setWordWrap(True)
         self.quote.setStyleSheet("font-size:18px; padding:12px;")
 
-
-        self.motivation = QLabel("BLABLA")  # keep if you want a subtitle
         self.pomodoro_rain50 = QPushButton("Pomodoro Rain 50/10")
         self.pomodoro_rain25 = QPushButton("Pomodoro Rain 25/5")
         self.River_Rain = QPushButton("River + Rain")
