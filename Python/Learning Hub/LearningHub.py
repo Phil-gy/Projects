@@ -4,13 +4,12 @@ from collections import defaultdict
 from PySide6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QLabel,
     QDialog, QDialogButtonBox, QLineEdit, QDateEdit, QFormLayout,
-    QListWidget, QListWidgetItem, QHBoxLayout, QMessageBox
+    QListWidget, QListWidgetItem, QHBoxLayout, QMessageBox, QMenu
 )
-from PySide6.QtCore import Qt, QDate, QSettings
+from PySide6.QtCore import Qt, QDate, QSettings, Signal
 from PySide6.QtGui import QTextCharFormat, QFont
 
 
-# ---------- Dialog to add a single exam ----------
 class ExamDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,29 +40,31 @@ class ExamDialog(QDialog):
         return name, date
 
 
-# ---------- Dialog to view all exams in calendar + list ----------
 class ExamsOverviewDialog(QDialog):
+    exams_updated = Signal(list)
+
     def __init__(self, exams, parent=None):
         super().__init__(parent)
         self.setWindowTitle("All Exams")
         self.resize(520, 420)
 
-        self.exams = list(exams)  # list of {"name": str, "date": "YYYY-MM-DD"}
+        self.exams = list(exams)  
 
         from PySide6.QtWidgets import QCalendarWidget
         self.calendar = QCalendarWidget(self)
         self.calendar.setGridVisible(True)
 
         self.list = QListWidget(self)
+        self.list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.list.customContextMenuRequested.connect(self._on_ctx_menu)
 
-        # Layout: Calendar left, list right
         h = QHBoxLayout()
         h.addWidget(self.calendar, 1)
         h.addWidget(self.list, 1)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Close)
         buttons.rejected.connect(self.reject)
-        buttons.accepted.connect(self.accept)  # not shown, but harmless
+        buttons.accepted.connect(self.accept)  
         buttons.button(QDialogButtonBox.Close).clicked.connect(self.close)
 
         layout = QVBoxLayout()
@@ -71,10 +72,8 @@ class ExamsOverviewDialog(QDialog):
         layout.addWidget(buttons)
         self.setLayout(layout)
 
-        # Populate calendar + list
         self._populate_calendar_and_list()
 
-        # Wire interactions
         self.calendar.clicked.connect(self._on_calendar_clicked)
         self.list.itemClicked.connect(self._on_list_clicked)
 
@@ -87,7 +86,7 @@ class ExamsOverviewDialog(QDialog):
             return "in 1 day"
         if diff > 1:
             return f"in {diff} days"
-        # past
+
         diff = qd.daysTo(today)
         if diff == 1:
             return "1 day ago"
@@ -95,10 +94,9 @@ class ExamsOverviewDialog(QDialog):
 
     def _populate_calendar_and_list(self):
         self.list.clear()
-        # clear any previous formats
+
         self.calendar.setDateTextFormat(QDate(), QTextCharFormat())
 
-        # group exams by date
         grouped = defaultdict(list)
         for ex in self.exams:
             try:
@@ -108,15 +106,13 @@ class ExamsOverviewDialog(QDialog):
                 continue
             grouped[qd].append(ex["name"])
 
-        # highlight dates
         fmt = QTextCharFormat()
         fmt.setFontWeight(QFont.Bold)
         fmt.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-        # (No explicit colors; uses theme. Add colors if you want.)
+
         for qd in grouped.keys():
             self.calendar.setDateTextFormat(qd, fmt)
 
-        # populate list (sorted by date)
         items_by_date = []
         for qd in sorted(grouped.keys()):
             for name in grouped[qd]:
@@ -127,11 +123,10 @@ class ExamsOverviewDialog(QDialog):
             tail = self._fmt_days_left(qd)
             text = f"{when} — {name}  ({tail})"
             item = QListWidgetItem(text)
-            # store date for selection sync
             item.setData(Qt.UserRole, qd)
+            item.setData(Qt.UserRole + 1, name)
             self.list.addItem(item)
 
-        # jump calendar to next upcoming (or last if all past)
         today = QDate.currentDate()
         target = None
         future = [qd for qd in sorted(grouped.keys()) if qd >= today]
@@ -143,7 +138,6 @@ class ExamsOverviewDialog(QDialog):
         if target:
             self.calendar.setSelectedDate(target)
             self.calendar.setCurrentPage(target.year(), target.month())
-            # also select first matching list item
             for i in range(self.list.count()):
                 it = self.list.item(i)
                 if it.data(Qt.UserRole) == target:
@@ -151,7 +145,6 @@ class ExamsOverviewDialog(QDialog):
                     break
 
     def _on_calendar_clicked(self, qdate: QDate):
-        # select first list item with this date
         for i in range(self.list.count()):
             it = self.list.item(i)
             if it.data(Qt.UserRole) == qdate:
@@ -164,8 +157,22 @@ class ExamsOverviewDialog(QDialog):
             self.calendar.setSelectedDate(qd)
             self.calendar.setCurrentPage(qd.year(), qd.month())
 
+    def _on_ctx_menu(self, pos):
+        item = self.list.itemAt(pos)
+        if not item:
+            return
+        menu = QMenu(self)
+        act_del = menu.addAction("Delete")
+        action = menu.exec(self.list.mapToGlobal(pos))
+        if action == act_del:
+            qd = item.data(Qt.UserRole)
+            name = item.data(Qt.UserRole + 1)
+            iso = qd.toString("yyyy-MM-dd")
+            self.exams = [ex for ex in self.exams if not (ex.get("name") == name and ex.get("date") == iso)]
+            self.exams_updated.emit(self.exams)
+            self._populate_calendar_and_list()
 
-# ---------- Main App ----------
+
 class LearningHub(QWidget):
     def __init__(self):
         super().__init__()
@@ -184,8 +191,7 @@ class LearningHub(QWidget):
             QPushButton:pressed { background: #1d2228; }
         """)
 
-        # persistent store
-        self.settings = QSettings("LearningHub", "StudyApp")  # org/app ids
+        self.settings = QSettings("LearningHub", "StudyApp")  
 
         self.quotes = [
             "Leg dein Handy Weg",
@@ -211,10 +217,16 @@ class LearningHub(QWidget):
         self.Mareux = QPushButton("Mareux Music")
         self.pomodoroSite = QPushButton("Pomodoro Site")
         self.AddExam = QPushButton("Add Exam")
-        self.ViewExams = QPushButton("View Exams")  # NEW
+        self.ViewExams = QPushButton("View Exams") 
         self.close_btn = QPushButton("Close App")
 
-        # footer for next exam
+        self.close_btn.setStyleSheet("""
+            background-color: #b91c1c;   /* red */
+            color: #ffffff;
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            """)
+
         self.next_exam_label = QLabel("", self)
         self.next_exam_label.setAlignment(Qt.AlignCenter)
         self.next_exam_label.setStyleSheet(
@@ -232,13 +244,12 @@ class LearningHub(QWidget):
         layout.addWidget(self.Mareux)
         layout.addWidget(self.pomodoroSite)
         layout.addWidget(self.AddExam)
-        layout.addWidget(self.ViewExams)   # NEW
+        layout.addWidget(self.ViewExams)   
         layout.addWidget(self.close_btn)
         layout.addSpacing(6)
-        layout.addWidget(self.next_exam_label)  # always at bottom
+        layout.addWidget(self.next_exam_label)  
         self.setLayout(layout)
 
-        # Connections
         self.close_btn.clicked.connect(self.close)
         self.pomodoro_rain50.clicked.connect(partial(self.open_link, "https://www.youtube.com/watch?v=Je0WXbgrWtQ"))
         self.pomodoro_rain25.clicked.connect(partial(self.open_link, "https://www.youtube.com/watch?v=KcsUCEAG9Q8"))
@@ -248,16 +259,15 @@ class LearningHub(QWidget):
         self.Mareux.clicked.connect(partial(self.open_link, "https://open.spotify.com/playlist/2IKeogGKce4bsccrruSEvX?si=95228b72643f4ec2"))
         self.pomodoroSite.clicked.connect(partial(self.open_link, "https://pomofocus.io/"))
         self.AddExam.clicked.connect(self.add_exam)
-        self.ViewExams.clicked.connect(self.view_exams)  # NEW
+        self.ViewExams.clicked.connect(self.view_exams) 
 
         # Data
-        self.exams = self.load_exams()  # list of {"name": str, "date": "YYYY-MM-DD"}
+        self.exams = self.load_exams()  
 
         # Startup
         self.show_random_quote()
         self.update_next_exam_label()
 
-    # ---------- persistence ----------
     def load_exams(self):
         raw = self.settings.value("exams_json", "")
         if not raw:
@@ -275,7 +285,6 @@ class LearningHub(QWidget):
     def save_exams(self):
         self.settings.setValue("exams_json", json.dumps(self.exams, ensure_ascii=False))
 
-    # ---------- helpers ----------
     def show_random_quote(self):
         self.quote.setText(random.choice(self.quotes))
 
@@ -291,15 +300,20 @@ class LearningHub(QWidget):
                 return
             iso = qdate.toString("yyyy-MM-dd")
             self.exams.append({"name": name, "date": iso})
-            # keep exams sorted by date ascending
             self.exams.sort(key=lambda x: x["date"])
             self.save_exams()
             self.update_next_exam_label()
 
     def view_exams(self):
-        # Open the overview dialog with the current list
         dlg = ExamsOverviewDialog(self.exams, self)
+        dlg.exams_updated.connect(self._on_exams_updated)
         dlg.exec()
+
+    def _on_exams_updated(self, exams):
+        self.exams = exams
+        self.exams.sort(key=lambda x: x["date"])
+        self.save_exams()
+        self.update_next_exam_label()
 
     def update_next_exam_label(self):
         if not self.exams:
@@ -308,7 +322,6 @@ class LearningHub(QWidget):
 
         today = QDate.currentDate()
         upcoming = None
-        # ensure sorted
         self.exams.sort(key=lambda x: x["date"])
         for ex in self.exams:
             try:
@@ -321,7 +334,6 @@ class LearningHub(QWidget):
                 break
 
         if upcoming is None:
-            # all in the past -> show most recent past with days overdue
             last = max(self.exams, key=lambda x: x["date"])
             y, m, d = map(int, last["date"].split("-"))
             qd = QDate(y, m, d)
