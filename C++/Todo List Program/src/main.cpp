@@ -2,9 +2,11 @@
 #include <string>
 #include <fstream>
 #include <limits>
-using std::cout, std::cin, std::endl, std::fstream,std::ofstream,std::string;
+//#include <bits/stdc++.h>
+using std::cout, std::cin, std::endl, std::fstream, std::ofstream, std::string;
 
 class todo_list{
+    const std::string filename = "todolist.txt";
     public:
     void action(int choice){
         switch (choice)
@@ -26,9 +28,7 @@ class todo_list{
         }
     }
 
-    void add_task() {
-        const std::string filename = "todolist.txt"; 
-
+    void add_task() { 
         std::ofstream file(filename, std::ios::app); 
         if (!file) {
             cout << "Error: can't open " << filename << " for writing.\n";
@@ -70,6 +70,24 @@ class todo_list{
     }
 
     void view_tasks(){
+        std::ifstream ReadFile("todolist.txt");
+        if (!ReadFile)
+        {
+            cout << "No Tasks yet added" << endl;
+            return;
+        }
+        std::string line;
+        int i = 0;
+        cout << endl << "All Tasks: " << endl;
+        while (std::getline(ReadFile, line))
+        {
+            if (line.empty()) continue;
+            cout << ++i << ". " << line << '\n';
+        }
+        cout << endl << "Enter anything to continue: " << endl;
+        string filler;
+        cin >> filler;
+        cin.clear();
 
     }
 
