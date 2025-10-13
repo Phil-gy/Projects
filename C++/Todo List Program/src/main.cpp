@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <limits>
-//#include <bits/stdc++.h>
+#include <cstdio>
 using std::cout, std::cin, std::endl, std::fstream, std::ofstream, std::string;
 
 class todo_list{
@@ -15,7 +15,11 @@ class todo_list{
             add_task();
             break;
         case 2:
-            remove_task();
+            int n;
+            view_tasks();
+            cout << "Which task do you want to remove ? " << endl;
+            cin >> n;
+            remove_task(n);
             break;
         case 3:
             view_tasks();
@@ -43,19 +47,19 @@ class todo_list{
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return;
         }
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // eat leftover '\n'
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 
         for (int i = 1; i <= n; ++i) {
             cout << "Task " << i << ": ";
             std::string task;
             std::getline(cin, task);
-            if (task.empty()) {            // prevent blank lines
+            if (task.empty()) {           
                 cout << "Empty task. Try again.\n";
                 --i;
                 continue;
             }
             file << task << '\n';
-            if (!file) {                   // catch I/O errors immediately
+            if (!file) {                   
                 cout << "Write error. Aborting.\n";
                 return;
             }
@@ -65,8 +69,29 @@ class todo_list{
     }
 
 
-    void remove_task(){
+    bool remove_task(int n) {
+        std::ifstream in(filename);
+        if (!in) return false;
 
+        std::ofstream out("todolist.tmp");
+        if (!out) return false;
+
+        std::string line;
+        int idx = 0;
+        bool removed = false;
+        while (std::getline(in, line)) {
+            ++idx;
+            if (idx == n) { removed = true; continue; }
+            out << line << '\n';
+        }
+        in.close();
+        out.close();
+
+        if (!removed) { std::remove("todolist.tmp"); return false; }
+
+        std::remove(filename.c_str());
+        std::rename("todolist.tmp", filename.c_str());
+        return true;
     }
 
     void view_tasks(){
@@ -84,11 +109,6 @@ class todo_list{
             if (line.empty()) continue;
             cout << ++i << ". " << line << '\n';
         }
-        cout << endl << "Enter anything to continue: " << endl;
-        string filler;
-        cin >> filler;
-        cin.clear();
-
     }
 
 
