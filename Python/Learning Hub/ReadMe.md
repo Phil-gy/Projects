@@ -18,6 +18,6 @@ Features include a Pomodoro timer, motivational quotes, and quick links to your 
 
 ```bash
 git clone https://github.com/Phil-gy/Projects.git
-cd Projects/Python/LearningHub            # or wherever you keep it
+cd Projects/Python/LearningHub            
 pip install -r requirements.txt
-python app/main.py                        # adjust if your entry file is named differently
+python src/LearningHub.py                       
