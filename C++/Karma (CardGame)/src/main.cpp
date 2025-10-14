@@ -25,7 +25,6 @@ class karma {
     std::vector<std::string> deck_;                 // the live deck
     std::vector<std::vector<std::string>> hands_;   // size = NUM_PLAYERS, each player’s cards
 
-public:
     public:
     karma() {
         hands_.assign(NUM_PLAYERS, {});   
@@ -65,18 +64,24 @@ public:
         int current = starting_player;
         int choice;
         // show current player's hand
-        std::cout << "Player " << (current + 1) << " hand:\n";
-        for (const auto& card : hands_[current]) {
-            std::cout << "  " << card << "\n";
-        }
+        int sp = starting_player;
+        std::cout << "Player " << (sp + 1) << " hand:\n";
+        for (int i = 0; i < (int)hands_[sp].size(); ++i)
+            std::cout << "  [" << i << "] " << hands_[sp][i] << "\n";
 
-       
-        cout << "What card do you want to set ? " << endl;
-        cin >> choice;
-        if (choice )
-        {
-            /* code */
+        int idx;
+        std::cout << "Choose a card index: ";
+        std::cin >> idx;
+        if (idx < 0 || idx >= (int)hands_[sp].size()) {
+            std::cout << "Invalid index.\n";
+            return; // or re-prompt
         }
+        // cout << "What card do you want to set ? " << endl;
+        // cin >> choice;
+        // if (choice )
+        // {
+        //     /* code */
+        // }
         
         
     }
