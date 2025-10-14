@@ -14,7 +14,7 @@ Die Projekte decken verschiedene Programmiersprachen und Themen ab – von GUI-A
 - **[Life Point Counter](Python/Life%20Point%20Counter)** – Lebenspunkte-Zähler für Kartenspiele wie Yu-Gi-Oh! (PySide6)
 
 ### 💻 C++
-- **[Karten Spiel Simulator (Karma) [W.I.P]](https://github.com/Phil-gy/Projects/tree/main/C%2B%2B/Karma%20(CardGame))** – Terminal-App zur Verwaltung von Aufgaben mit Dateispeicherung
+- **[Karten Spiel Simulator [W.I.P]](https://github.com/Phil-gy/Projects/tree/main/C%2B%2B/Karma%20(CardGame))** – Simulator des Kartenspiels Karma
 - **[Todo List Program](C++/Todo%20List%20Program)** – Terminal-App zur Verwaltung von Aufgaben mit Dateispeicherung
 
 ---
