@@ -44,6 +44,12 @@ Once those are gone, you play blindly from your face-down cards (no peeking).
 If you play an illegal face-down card,
 → you must take the pile (including that revealed card) into your hand.  
 
+| Card   | Name        | Effect                                                                       |
+| ------ | ----------- | ---------------------------------------------------------------------------- |
+| **2**  | Reset       | Can be played on anything; resets the pile value so any card can follow.     |
+| **3**  | Transparent | Wild card; does not change the pile’s value (next card determines legality). |
+| **7**  | Lower Rule  | Forces the **next player** to play a card **lower or equal** than 7.         |
+| **10** | Burn        | Destroys (clears) the pile entirely; player gets another turn.               |
 
 
 🏆 Winning
@@ -52,13 +58,6 @@ The first player to clear all cards (hand → face-up → face-down) wins.
 The last player left holding cards is the “Karma” (loser).
 
 ---
-
-## Features
- 
-
----
-
-## Compilation & Usage
 
 ### Windows (MinGW or MSYS2)
 ```bash
