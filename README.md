@@ -11,6 +11,7 @@ Die Projekte decken verschiedene Programmiersprachen und Themen ab – von GUI-A
 ### 🐍 Python
 - **[Learning Hub](Python/Learning%20Hub)** – Fokus-App mit Pomodoro-Timer und Motivationselementen (PySide6)
 - **[Calculator App](Python/Calculator%20App)** – Einfache Taschenrechner-App mit GUI (PySide6)
+- **[Pomodoro App [W.I.P]](https://github.com/Phil-gy/Projects/tree/main/Python/Pomodoro%20App/src)** – Pomodoro App um die Konzebtration zu Fördern (PySide6)
 - **[Life Point Counter](Python/Life%20Point%20Counter)** – Lebenspunkte-Zähler für Kartenspiele (PySide6)
 
 ### 💻 C++
