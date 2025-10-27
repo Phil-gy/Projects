@@ -216,6 +216,7 @@ class LearningHub(QWidget):
         self.Entspannte_Musik = QPushButton("Entspannte Musik")
         self.Mareux = QPushButton("Mareux Music")
         self.pomodoroSite = QPushButton("Pomodoro Site")
+        self.todoist = QPushButton("Todoist")
         self.AddExam = QPushButton("Add Exam")
         self.ViewExams = QPushButton("View Exams") 
         self.close_btn = QPushButton("Close App")
@@ -243,6 +244,7 @@ class LearningHub(QWidget):
         layout.addWidget(self.Entspannte_Musik)
         layout.addWidget(self.Mareux)
         layout.addWidget(self.pomodoroSite)
+        layout.addWidget(self.todoist)
         layout.addWidget(self.AddExam)
         layout.addWidget(self.ViewExams)   
         layout.addWidget(self.close_btn)
@@ -258,6 +260,7 @@ class LearningHub(QWidget):
         self.Entspannte_Musik.clicked.connect(partial(self.open_link, "https://open.spotify.com/playlist/76t3u3MWoKGMD4Mkw2yq3r?si=856149b4afcd4dd1"))
         self.Mareux.clicked.connect(partial(self.open_link, "https://open.spotify.com/playlist/2IKeogGKce4bsccrruSEvX?si=95228b72643f4ec2"))
         self.pomodoroSite.clicked.connect(partial(self.open_link, "https://pomofocus.io/"))
+        self.todoist.clicked.connect(partial(self.open_link, "https://app.todoist.com/app/inbox"))
         self.AddExam.clicked.connect(self.add_exam)
         self.ViewExams.clicked.connect(self.view_exams) 
 
@@ -267,6 +270,14 @@ class LearningHub(QWidget):
         # Startup
         self.show_random_quote()
         self.update_next_exam_label()
+    
+    def center_window(self):
+        screen = self.screen() or QApplication.primaryScreen()
+        geo = screen.availableGeometry()
+        center = geo.center()
+        frame = self.frameGeometry()
+        frame.moveCenter(center)
+        self.move(frame.topLeft())
 
     def load_exams(self):
         raw = self.settings.value("exams_json", "")
@@ -358,4 +369,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LearningHub()
     window.show()
+    window.center_window()
     sys.exit(app.exec())
