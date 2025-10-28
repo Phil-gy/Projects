@@ -1,4 +1,4 @@
-# Pomodor App
+# Pomodoro App
 
 A simple Pomodoro app built with **Python + PySide6** .  
 Features include the classical pomodoro timer with the automatic swtich between the work and break mode.
