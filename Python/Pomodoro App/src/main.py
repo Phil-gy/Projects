@@ -11,7 +11,7 @@ from PySide6.QtGui import QFont, QColor
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Pomodoro Timer – Philipp Edition")
+        self.setWindowTitle("Philipps Pomodoro Timer")
         self.resize(540, 440)
 
         self.work_duration = 25 * 60
@@ -37,11 +37,16 @@ class MainWindow(QMainWindow):
         self.button.setCursor(Qt.PointingHandCursor)
         self.button.clicked.connect(self.start_timer)
 
+        self.choose_time = QPushButton("Choose time Interval")
+        self.choose_time.setCursor(Qt.PointingHandCursor)
+        self.choose_time.clicked.connect(self.choose_time_interval)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(60, 60, 60, 60)
         layout.setSpacing(30)
         layout.addWidget(self.header)
         layout.addWidget(self.label)
+        layout.addWidget(self.choose_time)
         layout.addWidget(self.button, alignment=Qt.AlignCenter)
 
         frame = QFrame()
@@ -83,7 +88,21 @@ class MainWindow(QMainWindow):
                 self.counter = self.work_duration
                 self.label.setText("Back to Work 💪")
                 self.set_theme("work")
-            self.button.setText("▶ Start")
+            self.button.setText("▶ Start")\
+            
+
+    def choose_time_interval(self):
+        if self.work_duration == 25 * 60:
+            self.work_duration = 60 * 60
+        else:
+            self.work_duration = 25 * 60
+        if self.is_work_mode:
+            self.counter = self.work_duration
+            self.label.setText(self.format_time(self.counter))
+        if self.work_duration == 25 * 60:
+            self.choose_time.setText("Set to 60 min (Click to switch back)")
+        else:
+            self.choose_time.setText("Set to 25 min (Click to switch back)")
 
     def set_theme(self, mode: str):
         """Switches between work/break mode colors."""
@@ -118,7 +137,7 @@ class MainWindow(QMainWindow):
                 background-color: rgba(255, 255, 255, 0.18);
             }}
             QPushButton:pressed {{
-                background-color: rgba(255, 255, 255, 0.25);
+               background-color: rgba(255, 255, 255, 0.25);
             }}
         """)
 
