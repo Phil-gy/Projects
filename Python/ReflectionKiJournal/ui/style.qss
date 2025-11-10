@@ -1,0 +1,66 @@
+/* === GLOBAL COLORS === */
+QMainWindow {
+    background-color: #1E1E2E;
+}
+
+QWidget {
+    background-color: #1E1E2E;
+    color: #E0E0E0;
+    font-family: "Segoe UI";
+    font-size: 14px;
+}
+
+/* === LIST WIDGET === */
+QListWidget {
+    background-color: #2C2C3C;
+    border: 1px solid #3C3C4C;
+    border-radius: 8px;
+    padding: 6px;
+}
+QListWidget::item {
+    padding: 6px;
+    border-radius: 5px;
+}
+QListWidget::item:selected {
+    background-color: #5E5E8E;
+}
+
+/* === BUTTONS === */
+QPushButton {
+    background-color: #3E3E5E;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+}
+QPushButton:hover {
+    background-color: #5E5E8E;
+}
+QPushButton:pressed {
+    background-color: #2E2E4E;
+}
+
+/* === TEXT EDIT === */
+QTextEdit {
+    background-color: #2C2C3C;
+    border: 1px solid #3C3C4C;
+    border-radius: 10px;
+    padding: 10px;
+    color: #E0E0E0;
+    font-family: "Consolas";
+    font-size: 15px;
+}
+
+/* === SCROLLBARS === */
+QScrollBar:vertical {
+    background: #2C2C3C;
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #5E5E8E;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #7E7EB0;
+}
