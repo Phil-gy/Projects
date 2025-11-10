@@ -2,6 +2,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton
 from datetime import date
 from ..data_manager import load_entries, save_entries
 from .mood_slider import MoodSlider
+from ..summarizer import summarize_last_week
+
 
 class EditorPanel(QWidget):
     def __init__(self):
@@ -10,11 +12,15 @@ class EditorPanel(QWidget):
         self.save_button = QPushButton("Save Entry")
         self.save_button.clicked.connect(self.save_current_entry)
         self.mood_slider = MoodSlider()
+        self.summarize_button = QPushButton("🧠 Summarize My Week")
+        self.summarize_button.clicked.connect(self.generate_summary)
+
 
         layout = QVBoxLayout()
         layout.addWidget(self.text)
         layout.addWidget(self.mood_slider)
         layout.addWidget(self.save_button)
+        layout.addWidget(self.summarize_button)
         self.setLayout(layout)
 
         self.current_date = None
@@ -44,3 +50,13 @@ class EditorPanel(QWidget):
         }
         save_entries(entries)
         print(f"Saved entry for {self.current_date} (mood={mood_value})")
+
+    def generate_summary(self):
+        """Generate a weekly reflection summary and save it."""
+        result = summarize_last_week()
+        if isinstance(result, tuple):
+            summary_id, summary_text = result
+            self.text.setText(summary_text)
+            print(f"✅ Weekly summary added as {summary_id}")
+        else:
+            self.text.setText(result)

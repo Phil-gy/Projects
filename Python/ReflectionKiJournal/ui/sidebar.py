@@ -34,17 +34,18 @@ class Sidebar(QWidget):
     def refresh_list(self):
         """Reload the list of entries from the JSON file."""
         self.list.clear()
-        self.display_to_iso.clear()
-
         entries = load_entries()
         if entries:
-            for iso_date in sorted(entries.keys(), reverse=True):
-                # Convert from "YYYY-MM-DD" → "DD.MM.YYYY"
-                german_date = datetime.strptime(iso_date, "%Y-%m-%d").strftime("%d.%m.%Y")
-                self.display_to_iso[german_date] = iso_date
-                self.list.addItem(german_date)
+            for d in sorted(entries.keys(), reverse=True):
+                # detect AI-generated summaries
+                if d.startswith("summary-"):
+                    label = f"🧠 Weekly Summary ({d[8:]})"
+                else:
+                    label = d
+                self.list.addItem(label)
         else:
-            self.list.addItem("Keine Einträge vorhanden.")
+            self.list.addItem("No entries yet.")
+
 
     def add_today_entry(self):
         """Add an entry for today's date if it doesn't exist."""

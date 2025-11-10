@@ -3,6 +3,9 @@ from .sidebar import Sidebar
 from .editor_panel import EditorPanel
 from .mood_slider import MoodSlider
 import os
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QVariantAnimation
+from PySide6.QtGui import QColor
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,7 +24,7 @@ class MainWindow(QMainWindow):
        # right_layout.addWidget(self.mood_slider)  # ⬅ here under the text editor
 
         self.sidebar.entry_selected.connect(self.editor.load_entry)
-        
+
         right_container = QWidget()
         right_container.setLayout(right_layout)
 

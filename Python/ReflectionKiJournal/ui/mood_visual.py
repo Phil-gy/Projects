@@ -2,8 +2,11 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QPainter, QColor, QRadialGradient
 import math
+from PySide6.QtCore import QTimer, Qt, Signal
+
 
 class MoodVisual(QWidget):
+    colorChanged = Signal(str)
     def __init__(self):
         super().__init__()
         self.mood = 0        # -100 to +100
@@ -14,6 +17,13 @@ class MoodVisual(QWidget):
 
     def set_mood(self, value):
         self.mood = value
+        # compute mood color (red→blue transition)
+        ratio = (self.mood + 100) / 200.0
+        r = int(255 * (1 - ratio))
+        g = int(50 + 120 * ratio)
+        b = int(255 * ratio)
+        base_color = QColor(r, g, b)
+        self.colorChanged.emit(base_color.name())  # emit hex string
         self.update()
 
     def animate(self):
