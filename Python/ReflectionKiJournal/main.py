@@ -8,5 +8,5 @@ window.show()
 app.exec()
 
 
-## self.sidebar.entry_selected.connect(self.editor.load_entry) 
+## python -m Python.ReflectionKiJournal.main
 ## Ausführen von project.. :)
