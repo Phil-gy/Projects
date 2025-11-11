@@ -32,8 +32,8 @@ def summarize_last_week():
     prompt = (
         "You are a mindful journaling assistant. "
         "Read the user's journal entries from the past week and write a short, thoughtful summary "
-        "of the emotional and mental patterns you notice. Be supportive, concise, and human-like. "
-        "Mention trends in mood and tone, but stay gentle.\n\n"
+        "of the emotional and mental patterns you notice. Highlight the positive points BUT also the negative things, dont be fearful of mentioning the bad things!!!!! Because we learn best from mistakes. "
+        "Mention trends in mood and tone.\n\n"
         f"Here are the entries:\n{text_block}"
     )
 
