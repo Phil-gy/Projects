@@ -4,14 +4,14 @@ from datetime import date, datetime
 from ..data_manager import load_entries, save_entries
 
 
-
 class Sidebar(QWidget):
-    entry_selected = Signal(str)  # emits ISO date (e.g. "2025-11-10")
+    entry_selected = Signal(str)  # emits the JSON key (e.g. "2025-11-10" or "summary-2025-11-11")
 
     def __init__(self):
         super().__init__()
 
         self.list = QListWidget()
+
         self.add_button = QPushButton("➕ Neuer Eintrag (Heute)")
         self.add_button.clicked.connect(self.add_today_entry)
 
@@ -24,79 +24,79 @@ class Sidebar(QWidget):
         layout.addWidget(self.list)
         self.setLayout(layout)
 
-        self.display_to_iso = {}
+        # mapping: display text → JSON key (so we can delete/load correctly)
+        self.display_to_key = {}
+
         self.refresh_list()
         self.list.itemClicked.connect(self.on_item_clicked)
 
-        # Internal mapping: display text -> ISO key
-       
-
     def refresh_list(self):
-        """Reload the list of entries from the JSON file."""
+        """Reload all entries from JSON and populate the sidebar."""
         self.list.clear()
-        entries = load_entries()
-        if entries:
-            for d in sorted(entries.keys(), reverse=True):
-                # detect AI-generated summaries
-                if d.startswith("summary-"):
-                    label = f"🧠 Weekly Summary ({d[8:]})"
-                else:
-                    label = d
-                self.list.addItem(label)
-        else:
-            self.list.addItem("No entries yet.")
+        self.display_to_key.clear()
 
+        entries = load_entries()
+        if not entries:
+            self.list.addItem("Keine Einträge vorhanden.")
+            return
+
+        # sort newest first
+        for key in sorted(entries.keys(), reverse=True):
+            # --- Case 1: AI weekly summary ---
+            if key.startswith("summary-"):
+                date_str = key.replace("summary-", "")
+                display_text = f"🧠 Weekly Summary ({date_str})"
+                self.display_to_key[display_text] = key
+                self.list.addItem(display_text)
+
+            # --- Case 2: normal daily entry ---
+            else:
+                try:
+                    german_date = datetime.strptime(key, "%Y-%m-%d").strftime("%d.%m.%Y")
+                except ValueError:
+                    # fallback if somehow malformed
+                    german_date = key
+                self.display_to_key[german_date] = key
+                self.list.addItem(german_date)
 
     def add_today_entry(self):
         """Add an entry for today's date if it doesn't exist."""
-        today_iso = date.today().isoformat()  # 'YYYY-MM-DD'
+        today_iso = date.today().isoformat()
         entries = load_entries()
 
         if today_iso not in entries:
-            entries[today_iso] = {"text": ""}
+            entries[today_iso] = {"text": "", "mood": 0}
             save_entries(entries)
             self.refresh_list()
 
+        # select today's entry automatically
         today_german = date.today().strftime("%d.%m.%Y")
-        items = self.list.findItems(today_german, Qt.MatchExactly)
-        if items:
-            self.list.setCurrentItem(items[0])
-            self.entry_selected.emit(today_iso)
+        for i in range(self.list.count()):
+            if self.list.item(i).text() == today_german:
+                self.list.setCurrentRow(i)
+                self.entry_selected.emit(today_iso)
+                break
 
     def delete_current_entry(self):
-        """Delete the currently selected entry."""
+        """Delete whichever entry is currently selected."""
         current_item = self.list.currentItem()
         if not current_item:
             return
 
-        german_str = current_item.text()
-        if german_str in self.display_to_iso:
-            iso_date = self.display_to_iso[german_str]
-            entries = load_entries()
-            if iso_date in entries:
-                del entries[iso_date]
-                save_entries(entries)
-                self.refresh_list()
-
-    def refresh_list(self):
-        """Reload the list of entries from the JSON file."""
-        self.list.clear()
-        self.display_to_iso = {}
+        display_text = current_item.text()
+        key = self.display_to_key.get(display_text)
+        if not key:
+            return
 
         entries = load_entries()
-        if entries:
-            for iso_date in sorted(entries.keys(), reverse=True):
-                # Convert from ISO → German for display
-                german_date = datetime.strptime(iso_date, "%Y-%m-%d").strftime("%d.%m.%Y")
-                self.display_to_iso[german_date] = iso_date
-                self.list.addItem(german_date)
-        else:
-            self.list.addItem("Keine Einträge vorhanden.")
+        if key in entries:
+            del entries[key]
+            save_entries(entries)
+            self.refresh_list()
 
     def on_item_clicked(self, item):
-        """Emit the ISO date string when a list item is clicked."""
-        german_str = item.text()
-        iso_date = self.display_to_iso.get(german_str)
-        if iso_date:
-            self.entry_selected.emit(iso_date)
-
+        """Emit the proper key (ISO date or summary ID) when clicked."""
+        display_text = item.text()
+        key = self.display_to_key.get(display_text)
+        if key:
+            self.entry_selected.emit(key)
