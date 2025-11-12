@@ -1,19 +1,21 @@
 # 🧠 Reflection KI Journal  
 _A minimalistic AI-powered journaling app built with PySide6_
 
-![Screenshot](assets/preview.png)
+![Screenshot](assets/preview1.png)
+![Screenshot](assets/preview2.png)
 
 ---
 
 ## ✨ Features
 
-- 📝 **Daily Journal Entries** – Write and save personal notes for each day  
-- 🌈 **Mood Tracking** – Use a color-animated mood slider to record how your day felt  
-- 🧠 **AI Weekly Summary** – GPT-4 analyzes your past week and adds a reflective summary  
-- 📊 **Mood Chart** – Visual overview of your emotional trend  
-- 💾 **Persistent Storage** – All entries stored safely in a local `entries.json` file  
-- 🗑️ **Entry Management** – Create, delete, or revisit past entries    
-- 🎨 **Modern Dark UI** – Sleek, distraction-free interface built with PySide6  
+- 📝 **Daily Journal Entries** - Write and save personal notes for each day  
+- 🌈 **Mood Tracking** - Use a color-animated mood slider to record how your day felt  
+- 🧠 **AI Weekly Summary** - GPT-4 analyzes your past week and adds a reflective summary  
+- 📊 **Mood Chart** - Visual overview of your emotional trend  
+-    **Goals Tab**  - Tab to store personal goals
+- 💾 **Persistent Storage** - All entries stored safely in a local `entries.json` and an `goals.json` file  
+- 🗑️ **Entry Management** - Create, delete, or revisit past entries    
+- 🎨 **Modern Dark UI** - Sleek, distraction-free interface built with PySide6  
 
 ## 🧠 How the AI Summarization Works
 
