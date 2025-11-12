@@ -1,40 +1,38 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QWidget, QVBoxLayout, QTabWidget
 from .sidebar import Sidebar
 from .editor_panel import EditorPanel
 from .mood_slider import MoodSlider
 import os
 from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QVariantAnimation
 from PySide6.QtGui import QColor
+from .goals_tab import GoalsTab
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Reflection Journal")
-        self.resize(900, 600)
+        self.setWindowTitle("Reflection KI Journal")
+        self.resize(800, 600)
 
         self.sidebar = Sidebar()
         self.editor = EditorPanel()
-        self.mood_slider = MoodSlider()
-        self.load_stylesheet()
+        self.goals_tab = GoalsTab()
 
-        # Layouts
-        right_layout = QVBoxLayout()
-        right_layout.addWidget(self.editor)
-       # right_layout.addWidget(self.mood_slider)  # ⬅ here under the text editor
-
-        self.sidebar.entry_selected.connect(self.editor.load_entry)
-
-        right_container = QWidget()
-        right_container.setLayout(right_layout)
+        # --- Create tabs ---
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.editor, "📖 Journal")
+        self.tabs.addTab(self.goals_tab, "🎯 Goals")
 
         layout = QHBoxLayout()
         layout.addWidget(self.sidebar)
-        layout.addWidget(right_container)
+        layout.addWidget(self.tabs)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+        # connect sidebar clicks
+        self.sidebar.entry_selected.connect(self.editor.load_entry)
 
     def load_stylesheet(self):
         """Loads global QSS file."""
