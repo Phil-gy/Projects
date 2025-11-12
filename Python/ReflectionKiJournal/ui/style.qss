@@ -64,3 +64,18 @@ QScrollBar::handle:vertical {
 QScrollBar::handle:vertical:hover {
     background: #7E7EB0;
 }
+
+QCheckBox {
+    font-size: 16px;
+    color: white;
+    spacing: 8px;
+}
+QCheckBox::indicator:checked {
+    image: url(:/icons/checkmark.svg);
+}
+
+QListWidget::item:selected {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+}
+
