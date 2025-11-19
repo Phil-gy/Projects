@@ -1,7 +1,8 @@
 import os
 from datetime import date, timedelta
 from openai import OpenAI
-from .data_manager import load_entries, save_entries
+from data_manager import load_entries, save_entries
+
 
 
 def summarize_last_week():

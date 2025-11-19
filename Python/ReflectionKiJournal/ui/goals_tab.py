@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (
     QPushButton, QListWidgetItem, QCheckBox, QMessageBox, QLabel
 )
 from PySide6.QtCore import Qt, Signal, QSize
-from ..goal_manager import load_goals, save_goals
+from goal_manager import load_goals, save_goals
+
 
 
 class GoalRow(QWidget):

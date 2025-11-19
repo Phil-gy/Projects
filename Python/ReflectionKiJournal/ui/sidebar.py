@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QListWidget, QVBoxLayout, QPushButton
 from PySide6.QtCore import Signal, Qt
 from datetime import date, datetime
-from ..data_manager import load_entries, save_entries
+from data_manager import load_entries, save_entries
 
 
 class Sidebar(QWidget):

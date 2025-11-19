@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Reflection KI Journal")
-        self.resize(800, 600)
+        self.resize(1200, 800)
 
         self.sidebar = Sidebar()
         self.editor = EditorPanel()
