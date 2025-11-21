@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton
-from datetime import date, datetime, timedelta
+from PySide6.QtCore import Signal
+from datetime import date, datetime
 from data_manager import load_entries, save_entries
 from .mood_slider import MoodSlider
 from summarizer import summarize_last_week
@@ -7,31 +8,41 @@ from .charts_panel import ChartsPanel
 
 
 class EditorPanel(QWidget):
+    # emitted whenever entries.json changes (save or summary)
+    entries_changed = Signal()
+
     def __init__(self):
         super().__init__()
+
+        # widgets
         self.text = QTextEdit()
+        self.mood_slider = MoodSlider()
+
         self.save_button = QPushButton("Save Entry")
         self.save_button.clicked.connect(self.save_current_entry)
-        self.mood_slider = MoodSlider()
+
         self.summarize_button = QPushButton("🧠 Summarize My Week")
         self.summarize_button.clicked.connect(self.generate_summary)
 
-        layout = QVBoxLayout()
-        self.charts_panel = ChartsPanel(sentiments=self.compute_week_sentiments())
-        layout.addWidget(self.charts_panel)
-
+        # chart for last 7 days
         self.charts_panel = ChartsPanel(
             sentiments=self.compute_week_sentiments()
         )
 
+        # layout
+        layout = QVBoxLayout()
         layout.addWidget(self.text)
         layout.addWidget(self.mood_slider)
+        layout.addWidget(self.charts_panel)      # chart under slider
         layout.addWidget(self.save_button)
         layout.addWidget(self.summarize_button)
         self.setLayout(layout)
 
-        self.current_date = None
+        # state
+        self.current_date = None   # ISO "YYYY-MM-DD"
         self.entries = {}
+
+    # ---------------- load/save ----------------
 
     def load_entry(self, date_str: str):
         """Load an entry when user clicks a date in the sidebar."""
@@ -42,12 +53,11 @@ class EditorPanel(QWidget):
         self.text.setText(entry.get("text", ""))
         self.mood_slider.slider.setValue(entry.get("mood", 0))
 
-        # when switching day, also refresh chart
+        # refresh chart when switching day
         self.charts_panel.update_sentiments(self.compute_week_sentiments())
 
     def save_current_entry(self):
         """Save current text + mood to entries.json."""
-        # fallback: if no date selected, use today
         if not self.current_date:
             self.current_date = date.today().isoformat()
 
@@ -64,7 +74,13 @@ class EditorPanel(QWidget):
 
         # update chart AFTER saving
         self.charts_panel.update_sentiments(self.compute_week_sentiments())
+
+        # tell the rest of the app (sidebar) that entries changed
+        self.entries_changed.emit()
+
         print(f"Saved entry for {self.current_date} (mood={mood_value})")
+
+    # ---------------- AI summary ----------------
 
     def generate_summary(self):
         """Generate a weekly reflection summary and save it."""
@@ -75,6 +91,12 @@ class EditorPanel(QWidget):
             print(f"✅ Weekly summary added as {summary_id}")
         else:
             self.text.setText(result)
+
+        # entries.json was modified by summarizer → refresh sidebar & chart
+        self.entries_changed.emit()
+        self.charts_panel.update_sentiments(self.compute_week_sentiments())
+
+    # ---------------- chart data ----------------
 
     def compute_week_sentiments(self):
         """
@@ -93,7 +115,7 @@ class EditorPanel(QWidget):
         if not iso_dates:
             return []
 
-        # sort newest → oldest, then keep last 7 and flip to oldest → newest
+        # newest → oldest, keep last 7, then flip (oldest → newest)
         iso_dates_sorted = sorted(iso_dates, reverse=True)
         last7 = list(reversed(iso_dates_sorted[:7]))
 
@@ -104,8 +126,7 @@ class EditorPanel(QWidget):
 
             try:
                 dt = datetime.strptime(iso, "%Y-%m-%d")
-                # short label like "10.11."
-                label = dt.strftime("%d.%m.")
+                label = dt.strftime("%d.%m.")  # e.g. "10.11."
             except ValueError:
                 label = iso
 

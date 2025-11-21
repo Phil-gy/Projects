@@ -1,59 +1,151 @@
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QPainter, QColor, QRadialGradient
 import math
-from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QTimer
+from PySide6.QtGui import QPainter, QColor, QPainterPath, Qt
+
+
+DARK_BG = QColor(5, 5, 20)
+
+
+def lerp(a: float, b: float, t: float) -> float:
+    return a + (b - a) * t
+
+
+def lerp_color(c1: QColor, c2: QColor, t: float) -> QColor:
+    return QColor(
+        int(lerp(c1.red(),   c2.red(),   t)),
+        int(lerp(c1.green(), c2.green(), t)),
+        int(lerp(c1.blue(),  c2.blue(),  t)),
+        int(lerp(c1.alpha(), c2.alpha(), t)),
+    )
 
 
 class MoodVisual(QWidget):
-    colorChanged = Signal(str)
+    """
+    Mood flower inspired by the Apple Health mental health slider:
+
+    - mood in [-100, 100]
+    - layered petal shapes
+    - subtle breathing + slow rotation
+    - smooth warm → neutral → cool color mapping
+    """
+
     def __init__(self):
         super().__init__()
-        self.mood = 0        # -100 to +100
-        self.phase = 0       # animation phase
+
+        self.mood = 0         # -100 .. 100
+        self.phase = 0.0      # breathing / petal animation
+        self.rotation = 0.0   # slow rotation
+
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.animate)
-        self.timer.start(30)  # 30 ms → ~33 FPS
+        self.timer.start(30)  # ~33 FPS
 
-    def set_mood(self, value):
-        self.mood = value
-        # compute mood color (red→blue transition)
-        ratio = (self.mood + 100) / 200.0
-        r = int(255 * (1 - ratio))
-        g = int(50 + 120 * ratio)
-        b = int(255 * ratio)
-        base_color = QColor(r, g, b)
-        self.colorChanged.emit(base_color.name())  # emit hex string
+        self.setMinimumHeight(160)
+
+    # ------------------------------------------------------------------ API
+
+    def set_mood(self, value: int):
+        self.mood = max(-100, min(100, value))
         self.update()
+
+    # ----------------------------------------------------------------- update
 
     def animate(self):
-        self.phase += 0.05
+        # gentle breathing
+        self.phase += 0.04
         if self.phase > 2 * math.pi:
             self.phase -= 2 * math.pi
+
+        # very slow rotation
+        self.rotation += 0.003
+        if self.rotation > 2 * math.pi:
+            self.rotation -= 2 * math.pi
+
         self.update()
+
+    # ------------------------------------------------------------------ paint
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.fillRect(self.rect(), QColor(10, 10, 25))  # dark background
 
-        # compute mood color (red→blue)
-        ratio = (self.mood + 100) / 200.0
-        r = int(255 * (1 - ratio))
-        g = int(80 + 80 * ratio)
-        b = int(255 * ratio)
-        base_color = QColor(r, g, b)
+        rect = self.rect()
+        painter.fillRect(rect, DARK_BG)
 
-        # subtle pulse radius
-        width, height = self.width(), self.height()
-        radius = min(width, height) / 3 * (1 + 0.05 * math.sin(self.phase))
+        w = rect.width()
+        h = rect.height()
+        cx = rect.center().x()
+        cy = rect.center().y()
+        base_radius = min(w, h) * 0.22
 
-        # radial gradient
-        grad = QRadialGradient(width / 2, height / 2, radius)
-        grad.setColorAt(0.0, base_color.lighter(150))
-        grad.setColorAt(0.3, base_color)
-        grad.setColorAt(1.0, QColor(10, 10, 25))
+        # mood → color mapping
+        # -100 → warm orange/red, 0 → lavender, 100 → cyan / blue
+        t = (self.mood + 100) / 200.0  # 0..1
+        neg = QColor(255, 140, 90)
+        mid = QColor(190, 150, 255)
+        pos = QColor(80, 220, 255)
 
-        painter.setBrush(grad)
+        if t < 0.5:
+            base_color = lerp_color(neg, mid, t * 2.0)
+        else:
+            base_color = lerp_color(mid, pos, (t - 0.5) * 2.0)
+
+        # number of "petals"
+        petals = 7
+
+        # draw 3 layered shapes: inner, mid, outer
+        layers = [
+            {"scale": 0.9, "amp": 0.18, "alpha": 210},
+            {"scale": 1.4, "amp": 0.14, "alpha": 130},
+            {"scale": 1.9, "amp": 0.10, "alpha": 70},
+        ]
+
+        painter.translate(cx, cy)
+        painter.rotate(math.degrees(self.rotation))
+
+        for i, layer in enumerate(layers):
+            scale = layer["scale"]
+            amp = layer["amp"]
+            alpha = layer["alpha"]
+
+            # slight phase offset per layer so they don't all move identically
+            layer_phase = self.phase * (1.0 + 0.1 * i)
+
+            path = QPainterPath()
+            points = 120
+            for k in range(points + 1):
+                angle = 2 * math.pi * k / points
+
+                # petal modulation
+                r_mod = 1.0 + amp * math.sin(petals * angle + layer_phase)
+
+                # subtle breathing of the whole layer
+                breathe = 1.0 + 0.03 * math.sin(self.phase + i * 0.7)
+
+                r = base_radius * scale * r_mod * breathe
+                x = r * math.cos(angle)
+                y = r * math.sin(angle)
+
+                if k == 0:
+                    path.moveTo(x, y)
+                else:
+                    path.lineTo(x, y)
+
+            color = QColor(base_color)
+            color.setAlpha(alpha)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(color)
+            painter.drawPath(path)
+
+        # small bright core
+        core_radius = base_radius * 0.32 * (1.0 + 0.03 * math.sin(self.phase * 1.5))
+        core_color = QColor(255, 255, 255, 230)
+        painter.setBrush(core_color)
         painter.setPen(Qt.NoPen)
-        painter.drawEllipse(width / 2 - radius, height / 2 - radius, radius * 2, radius * 2)
+        painter.drawEllipse(
+            -core_radius,
+            -core_radius,
+            core_radius * 2,
+            core_radius * 2,
+        )

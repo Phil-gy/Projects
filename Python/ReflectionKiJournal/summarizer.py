@@ -35,6 +35,7 @@ def summarize_last_week():
         "Read the user's journal entries from the past week and write a short, thoughtful summary "
         "of the emotional and mental patterns you notice. Highlight the positive points BUT also the negative things, dont be fearful of mentioning the bad things!!!!! Because we learn best from mistakes. "
         "Mention trends in mood and tone.\n\n"
+        "Remember that the mood slider things values signify these moods:         if value < -60: Very Unpleasant elif value < -20: Slightly Unpleasant elif value < 20: Neutral elif value < 60: Pleasant  above thatVery Pleasant " 
         f"Here are the entries:\n{text_block}"
     )
 
