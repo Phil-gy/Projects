@@ -33,9 +33,9 @@ class MoodVisual(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.mood = 0         # -100 .. 100
-        self.phase = 0.0      # breathing / petal animation
-        self.rotation = 0.0   # slow rotation
+        self.mood = 0         
+        self.phase = 0.0      
+        self.rotation = 0.0   
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.animate)
@@ -43,28 +43,22 @@ class MoodVisual(QWidget):
 
         self.setMinimumHeight(160)
 
-    # ------------------------------------------------------------------ API
-
     def set_mood(self, value: int):
         self.mood = max(-100, min(100, value))
         self.update()
 
-    # ----------------------------------------------------------------- update
 
     def animate(self):
-        # gentle breathing
         self.phase += 0.04
         if self.phase > 2 * math.pi:
             self.phase -= 2 * math.pi
 
-        # very slow rotation
         self.rotation += 0.003
         if self.rotation > 2 * math.pi:
             self.rotation -= 2 * math.pi
 
         self.update()
 
-    # ------------------------------------------------------------------ paint
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -79,9 +73,7 @@ class MoodVisual(QWidget):
         cy = rect.center().y()
         base_radius = min(w, h) * 0.22
 
-        # mood → color mapping
-        # -100 → warm orange/red, 0 → lavender, 100 → cyan / blue
-        t = (self.mood + 100) / 200.0  # 0..1
+        t = (self.mood + 100) / 200.0  
         neg = QColor(255, 140, 90)
         mid = QColor(190, 150, 255)
         pos = QColor(80, 220, 255)
@@ -91,10 +83,9 @@ class MoodVisual(QWidget):
         else:
             base_color = lerp_color(mid, pos, (t - 0.5) * 2.0)
 
-        # number of "petals"
         petals = 7
 
-        # draw 3 layered shapes: inner, mid, outer
+    
         layers = [
             {"scale": 0.9, "amp": 0.18, "alpha": 210},
             {"scale": 1.4, "amp": 0.14, "alpha": 130},
@@ -109,7 +100,6 @@ class MoodVisual(QWidget):
             amp = layer["amp"]
             alpha = layer["alpha"]
 
-            # slight phase offset per layer so they don't all move identically
             layer_phase = self.phase * (1.0 + 0.1 * i)
 
             path = QPainterPath()
@@ -117,10 +107,8 @@ class MoodVisual(QWidget):
             for k in range(points + 1):
                 angle = 2 * math.pi * k / points
 
-                # petal modulation
                 r_mod = 1.0 + amp * math.sin(petals * angle + layer_phase)
 
-                # subtle breathing of the whole layer
                 breathe = 1.0 + 0.03 * math.sin(self.phase + i * 0.7)
 
                 r = base_radius * scale * r_mod * breathe
@@ -138,7 +126,6 @@ class MoodVisual(QWidget):
             painter.setBrush(color)
             painter.drawPath(path)
 
-        # small bright core
         core_radius = base_radius * 0.32 * (1.0 + 0.03 * math.sin(self.phase * 1.5))
         core_color = QColor(255, 255, 255, 230)
         painter.setBrush(core_color)

@@ -4,10 +4,10 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 
-DARK_BG = "#151521"    # panel / window background
-AX_BG   = "#1b1b2b"    # axes background
+DARK_BG = "#151521"    
+AX_BG   = "#1b1b2b"    
 GRID    = "#3a3a4a"
-LINE    = "#40e0d0"    # teal-ish, like your slider accent
+LINE    = "#40e0d0"    
 TICK    = "#dddddd"
 LABEL   = "#ffffff"
 
@@ -24,13 +24,10 @@ class ChartsPanel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Matplotlib figure + canvas
         self.figure = Figure(figsize=(4, 1.5), tight_layout=True)
-        # figure background (outside axes)
         self.figure.patch.set_facecolor(DARK_BG)
 
         self.canvas = FigureCanvasQTAgg(self.figure)
-        # make the Qt widget background match as well
         self.canvas.setStyleSheet(f"background-color: {DARK_BG}; border: none;")
 
         layout.addWidget(self.canvas)
@@ -47,11 +44,9 @@ class ChartsPanel(QWidget):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
 
-        # axes background
         ax.set_facecolor(AX_BG)
 
         if not self.sentiments:
-            # Placeholder text when no data
             ax.text(
                 0.5, 0.5,
                 "Noch keine Stimmungsdaten",
@@ -79,14 +74,11 @@ class ChartsPanel(QWidget):
             ax.set_ylim(-100, 100)
             ax.grid(color=GRID, alpha=0.5, linewidth=0.7)
 
-            # style spines
             for spine in ax.spines.values():
                 spine.set_color(GRID)
 
-            # ticks
             ax.tick_params(colors=TICK, labelsize=8)
 
-            # optional: hide top/right spines for a cleaner look
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
 

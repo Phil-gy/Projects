@@ -23,23 +23,18 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Reflection KI Journal")
         self.resize(1200, 700)
 
-        # widgets
         self.sidebar = Sidebar()
         self.editor = EditorPanel()
         self.goals_tab = GoalsTab()
 
-        # connect: click on date → load entry
         self.sidebar.entry_selected.connect(self.editor.load_entry)
 
-        # connect: whenever entries.json changes → refresh sidebar list
         self.editor.entries_changed.connect(self.sidebar.refresh_list)
 
-        # tabs on right side
         tabs = QTabWidget()
         tabs.addTab(self.editor, "Journal")
         tabs.addTab(self.goals_tab, "Goals")
 
-        # left/right splitter
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.sidebar)
         splitter.addWidget(tabs)
@@ -63,10 +58,8 @@ class MainWindow(QMainWindow):
         - When frozen as EXE: folder next to the EXE / style.qss
         """
         if getattr(sys, "frozen", False):
-            # Running from the PyInstaller EXE
             base_dir = Path(sys.executable).parent
         else:
-            # Running from source
             base_dir = Path(__file__).resolve().parent.parent
 
         qss_path = base_dir / "style.qss"

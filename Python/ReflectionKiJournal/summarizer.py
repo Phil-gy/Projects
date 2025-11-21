@@ -11,7 +11,6 @@ def summarize_last_week():
     today = date.today()
     week_ago = today - timedelta(days=7)
 
-    # Collect last 7 days
     recent_entries = {
         d: v for d, v in entries.items()
         if week_ago.isoformat() <= d <= today.isoformat()
@@ -20,14 +19,12 @@ def summarize_last_week():
     if not recent_entries:
         return "No recent entries found to summarize."
 
-    # Build readable text for the model
     text_block = ""
     for day, data in sorted(recent_entries.items()):
         text = data.get("text", "").strip()
         mood = data.get("mood", 0)
         text_block += f"\n### {day}\nMood: {mood}\n{text}\n"
 
-    # Prepare AI request
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     prompt = (
@@ -50,11 +47,9 @@ def summarize_last_week():
         )
         summary_text = response.choices[0].message.content.strip()
 
-        # Compute average mood
         moods = [v.get("mood", 0) for v in recent_entries.values()]
         avg_mood = sum(moods) / len(moods) if moods else 0
 
-        # Save the summary
         summary_id = f"summary-{today.isoformat()}"
         entries[summary_id] = {"text": summary_text, "mood": avg_mood}
         save_entries(entries)
