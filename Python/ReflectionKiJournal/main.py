@@ -18,6 +18,3 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     app.exec()
-
-## python -m Python.ReflectionKiJournal.main
-## Ausführen von project.. :)
