@@ -2,7 +2,7 @@ import sys
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QLabel,
-    QVBoxLayout, QWidget, QFrame, QGraphicsDropShadowEffect
+    QVBoxLayout, QWidget, QFrame, QGraphicsDropShadowEffect, QDialog
 )
 from PySide6.QtGui import QFont, QColor
 
@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Philipps Pomodoro Timer")
         self.resize(540, 440)
 
-        self.work_duration = 25 * 60
+        self.work_duration = 60 * 60
         self.break_duration = 5 * 60
         self.is_work_mode = True
         self.counter = self.work_duration
@@ -79,11 +79,21 @@ class MainWindow(QMainWindow):
         else:
             self.timer.stop()
             if self.is_work_mode:
+                dlg = InformationPopUp(self.is_work_mode, None)
+                dlg.show()
+                dlg.raise_()
+                dlg.activateWindow()
+                dlg.exec()
                 self.is_work_mode = False
                 self.counter = self.break_duration
                 self.label.setText("Break Time ☕")
                 self.set_theme("break")
             else:
+                dlg = InformationPopUp(self.is_work_mode, None)
+                dlg.show()
+                dlg.raise_()
+                dlg.activateWindow()
+                dlg.exec()
                 self.is_work_mode = True
                 self.counter = self.work_duration
                 self.label.setText("Back to Work 💪")
@@ -141,6 +151,29 @@ class MainWindow(QMainWindow):
             }}
         """)
 
+class InformationPopUp(QDialog):
+    def __init__(self, is_work_mode: bool, parent=None):
+        super().__init__(parent)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        self.setWindowTitle("The Times up !! ")
+        self.resize(300,200)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+        
+        if is_work_mode:
+            message = QLabel("Time for a break !!")
+        else:
+            message = QLabel("Get back to work asap !!")
+            
+        message.setAlignment(Qt.AlignCenter)
+        message.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        
+        layout.addWidget(message)
+        self.setLayout(layout)
+
+        self.adjustSize()
+        self.setFixedSize(self.sizeHint())
 
 app = QApplication(sys.argv)
 window = MainWindow()
