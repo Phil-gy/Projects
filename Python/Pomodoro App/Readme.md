@@ -3,9 +3,7 @@
 A simple Pomodoro app built with **Python + PySide6** .  
 Features include the classical pomodoro timer with the automatic swtich between the work and break mode.
 TODO:
--Display work and break mode visually
--Add tasks which can them be completed during the study session
--switches between long and short break ?
+-- Add a music player with different tracks 
 ---
 
 ## Features
