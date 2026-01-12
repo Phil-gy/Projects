@@ -2,7 +2,7 @@ from PySide6.QtCore import QTimer, Qt, QDate, QSettings
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtWidgets import (
     QMainWindow, QPushButton, QLabel, QVBoxLayout, QFrame,
-    QGraphicsDropShadowEffect, QMessageBox
+    QGraphicsDropShadowEffect, QMessageBox, QDialog, QHBoxLayout
 )
 
 from dialogs.exam_dialog import ExamDialog
@@ -25,7 +25,6 @@ class MainWindow(QMainWindow):
         self.is_work_mode = True
         self.counter = self.work_duration
 
-       
         self.header = QLabel("🍅 Philipp’s Pomodoro")
         self.header.setAlignment(Qt.AlignCenter)
         self.header.setFont(QFont("Segoe UI", 20, QFont.Bold))
@@ -36,7 +35,7 @@ class MainWindow(QMainWindow):
 
         self.next_exam_label = QLabel("", self)
         self.next_exam_label.setAlignment(Qt.AlignCenter)
-        self.next_exam_label.setStyleSheet("font-size: 16px; padding: 10px; color: #c8d1da;")
+        self.next_exam_label.setStyleSheet("font-size: 19px; padding: 10px; color: #c8d1da;")
 
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(30)
@@ -55,21 +54,34 @@ class MainWindow(QMainWindow):
         self.add_exam_btn = QPushButton("➕ Add exam")
         self.add_exam_btn.setCursor(Qt.PointingHandCursor)
         self.add_exam_btn.clicked.connect(self.add_exam)
+      #  self.add_exam_btn.setFixedSize(260, 56)
 
         self.view_exams_btn = QPushButton("📅 View exams")
         self.view_exams_btn.setCursor(Qt.PointingHandCursor)
         self.view_exams_btn.clicked.connect(self.view_exams)
+        #self.view_exams_btn.setFixedSize(260, 56)
+        
+        exam_buttons_layout = QHBoxLayout()
+        exam_buttons_layout.setSpacing(16)  # space between buttons
+
+        exam_buttons_layout.addWidget(self.add_exam_btn)
+        exam_buttons_layout.addWidget(self.view_exams_btn)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(60, 60, 60, 60)
         layout.setSpacing(18)
+
         layout.addWidget(self.header)
         layout.addWidget(self.label)
         layout.addWidget(self.next_exam_label)
-        layout.addWidget(self.add_exam_btn)
-        layout.addWidget(self.view_exams_btn)
+
+        layout.addLayout(exam_buttons_layout)   
+
         layout.addWidget(self.choose_time)
         layout.addWidget(self.button, alignment=Qt.AlignCenter)
+
+        self.add_exam_btn.setMinimumWidth(0)
+        self.view_exams_btn.setMinimumWidth(0)
 
         frame = QFrame()
         frame.setLayout(layout)
@@ -171,7 +183,10 @@ class MainWindow(QMainWindow):
 
     def add_exam(self):
         dlg = ExamDialog(self)
-        if dlg.exec() == dlg.Accepted:
+        result = dlg.exec()
+
+        # IMPORTANT: compare against the dialog return code, not dlg.accepted (signal)
+        if result == QDialog.Accepted:
             name, qdate = dlg.get_data()
             if not name:
                 QMessageBox.warning(self, "Invalid", "Exam name cannot be empty.")
