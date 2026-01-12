@@ -8,7 +8,7 @@ class InformationPopUp(QDialog):
         super().__init__(parent)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setWindowTitle("The Times up !!")
-        self.resize(300, 200)
+        self.resize(1000, 1000)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 24, 24, 24)
