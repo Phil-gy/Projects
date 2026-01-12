@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
 
         self.next_exam_label = QLabel("", self)
         self.next_exam_label.setAlignment(Qt.AlignCenter)
-        self.next_exam_label.setStyleSheet("font-size: 19px; padding: 10px; color: #c8d1da;")
+        self.next_exam_label.setStyleSheet("font-size: 14px; padding: 10px; color: #c8d1da;")
 
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(30)
@@ -54,15 +54,13 @@ class MainWindow(QMainWindow):
         self.add_exam_btn = QPushButton("➕ Add exam")
         self.add_exam_btn.setCursor(Qt.PointingHandCursor)
         self.add_exam_btn.clicked.connect(self.add_exam)
-      #  self.add_exam_btn.setFixedSize(260, 56)
 
         self.view_exams_btn = QPushButton("📅 View exams")
         self.view_exams_btn.setCursor(Qt.PointingHandCursor)
         self.view_exams_btn.clicked.connect(self.view_exams)
-        #self.view_exams_btn.setFixedSize(260, 56)
         
         exam_buttons_layout = QHBoxLayout()
-        exam_buttons_layout.setSpacing(16)  # space between buttons
+        exam_buttons_layout.setSpacing(16)  
 
         exam_buttons_layout.addWidget(self.add_exam_btn)
         exam_buttons_layout.addWidget(self.view_exams_btn)
@@ -241,9 +239,16 @@ class MainWindow(QMainWindow):
         name, date = upcoming
         days_left = today.daysTo(date)
         if days_left == 0:
-            msg = f"Next exam: '{name}' is TODAY ({date.toString('dd.MM.yyyy')}) — LOCK IN."
+            msg = f"Next exam: '{name}' is TODAY ({date.toString('dd.MM.yyyy')}) YOU GOT THIS ."
         elif days_left == 1:
             msg = f"Next exam: '{name}' in 1 day — {date.toString('dd.MM.yyyy')}."
+        elif days_left >= 2 and days_left <= 7:
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - LOCK IN JUNGE ES WIRD ERNST"
+        elif days_left >= 8 and days_left <= 14:
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - ZIEH DURCH"
+        elif days_left >= 15 and days_left <= 29:
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Unter einem Monat, Get to work"            
         else:
-            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}."
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Calm, behalte aber alles im Blick !!"            
+            
         self.next_exam_label.setText(msg)
