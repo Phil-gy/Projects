@@ -50,8 +50,15 @@ class ExamsOverviewDialog(QDialog):
             return "today"
         if diff == 1:
             return "in 1 day"
-        if diff > 1:
-            return f"in {diff} days"
+
+        if diff >= 2 and diff <= 7:
+            return f"in {diff} days - LOCK IN JUNGE ES WIRD ERNST"
+        if diff >= 8 and diff <= 14:
+            return f"in {diff} days - ZIEH DURCH"
+        if diff >= 15 and diff <= 29:
+            return f"in {diff} days - Unter einen Monat, Get to work"
+        if diff >= 30:
+            return f"in {diff} days - Calm, behalte alles im Blick !!"
 
         diff = qd.daysTo(today)
         if diff == 1:
