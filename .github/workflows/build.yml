@@ -1,17 +1,15 @@
-name: Build Apps
+name: Build Pomodoro Apps
 
 on:
   push:
     branches: ["main", "master"]
   workflow_dispatch:
-  release:
-    types: [created]
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -20,24 +18,26 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        working-directory: "Python/Pomodoro App"
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Build EXE
+      - name: Build Windows EXE
+        working-directory: "Python/Pomodoro App"
         run: |
           pyinstaller --noconfirm --clean --onefile --windowed --name Pomodoro main.py
 
-      - name: Upload artifact (Windows)
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pomodoro-Windows
-          path: dist/Pomodoro.exe
+          path: "Python/Pomodoro App/dist/Pomodoro.exe"
 
   build-macos:
     runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -46,16 +46,18 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        working-directory: "Python/Pomodoro App"
         run: |
           python3 -m pip install --upgrade pip
           pip3 install -r requirements.txt
 
-      - name: Build .app
+      - name: Build macOS .app
+        working-directory: "Python/Pomodoro App"
         run: |
           pyinstaller --noconfirm --clean --windowed --name Pomodoro main.py
 
-      - name: Upload artifact (macOS)
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pomodoro-macOS
-          path: dist/Pomodoro.app
+          path: "Python/Pomodoro App/dist/Pomodoro.app"

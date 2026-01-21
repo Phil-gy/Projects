@@ -9,13 +9,13 @@ from dialogs.exam_dialog import ExamDialog
 from dialogs.exams_overview_dialog import ExamsOverviewDialog
 from dialogs.information_popup import InformationPopUp
 from utils.exams_storage import load_exams, save_exams
+from dialogs.music_player import music_player
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Philipps Pomodoro Timer")
-        self.resize(540, 440)
 
         self.settings = QSettings("Philipp", "PomodoroTimer")
         self.exams = load_exams(self.settings)
@@ -58,12 +58,20 @@ class MainWindow(QMainWindow):
         self.view_exams_btn = QPushButton("📅 View exams")
         self.view_exams_btn.setCursor(Qt.PointingHandCursor)
         self.view_exams_btn.clicked.connect(self.view_exams)
-        
-        exam_buttons_layout = QHBoxLayout()
-        exam_buttons_layout.setSpacing(16)  
 
+        self.music_btn = QPushButton(" Musicplayer")
+        self.music_btn.setCursor(Qt.PointingHandCursor)
+        self.music_btn.clicked.connect(self.music_player)
+
+        exam_buttons_layout = QHBoxLayout()
+        exam_buttons_layout.setSpacing(16)
         exam_buttons_layout.addWidget(self.add_exam_btn)
         exam_buttons_layout.addWidget(self.view_exams_btn)
+
+        lower_buttons = QHBoxLayout()
+        lower_buttons.setSpacing(16)
+        lower_buttons.addWidget(self.music_btn)
+        lower_buttons.addWidget(self.button)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(60, 60, 60, 60)
@@ -73,10 +81,12 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.label)
         layout.addWidget(self.next_exam_label)
 
-        layout.addLayout(exam_buttons_layout)   
-
+        layout.addLayout(exam_buttons_layout)
         layout.addWidget(self.choose_time)
-        layout.addWidget(self.button, alignment=Qt.AlignCenter)
+        layout.addLayout(lower_buttons)
+        layout.addStretch(1)
+
+        self.resize(540, 560)
 
         self.add_exam_btn.setMinimumWidth(0)
         self.view_exams_btn.setMinimumWidth(0)
@@ -154,7 +164,7 @@ class MainWindow(QMainWindow):
             accent = "#c8e6c9"
 
         self.setStyleSheet(f"""
-            QMainWindow {{
+            QMainWindow, QDialog {{
                 background: {bg_gradient};
             }}
             QLabel {{
@@ -177,13 +187,10 @@ class MainWindow(QMainWindow):
             }}
         """)
 
-    # -------------------- Exams --------------------
-
     def add_exam(self):
         dlg = ExamDialog(self)
         result = dlg.exec()
 
-        # IMPORTANT: compare against the dialog return code, not dlg.accepted (signal)
         if result == QDialog.Accepted:
             name, qdate = dlg.get_data()
             if not name:
@@ -247,8 +254,13 @@ class MainWindow(QMainWindow):
         elif days_left >= 8 and days_left <= 14:
             msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - ZIEH DURCH"
         elif days_left >= 15 and days_left <= 29:
-            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Unter einem Monat, Get to work"            
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Unter einem Monat, Get to work"
         else:
-            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Calm, behalte aber alles im Blick !!"            
-            
+            msg = f"Next exam: '{name}' in {days_left} days — {date.toString('dd.MM.yyyy')}. - Calm, behalte aber alles im Blick !!"
+
         self.next_exam_label.setText(msg)
+
+    def music_player(self):
+        dlg = music_player()
+        dlg.setStyleSheet(self.styleSheet())
+        dlg.exec()
