@@ -20,6 +20,8 @@ class MainWindow(QMainWindow):
         self.settings = QSettings("Philipp", "PomodoroTimer")
         self.exams = load_exams(self.settings)
 
+        self._music_dialog = None
+
         self.work_duration = 60 * 60
         self.break_duration = 5 * 60
         self.is_work_mode = True
@@ -261,6 +263,10 @@ class MainWindow(QMainWindow):
         self.next_exam_label.setText(msg)
 
     def music_player(self):
-        dlg = music_player()
-        dlg.setStyleSheet(self.styleSheet())
-        dlg.exec()
+        if self._music_dialog is None:
+            self._music_dialog = music_player(self)
+            self._music_dialog.setStyleSheet(self.styleSheet())
+        self._music_dialog.show()
+        self._music_dialog.raise_()
+        self._music_dialog.activateWindow()
+
