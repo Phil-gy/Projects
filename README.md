@@ -10,7 +10,7 @@ Die Projekte decken verschiedene Programmiersprachen und Themen ab, von GUI-Anwe
 
 ### 🐍 Python
 - **[Reflection Ki Journal](https://github.com/Phil-gy/Projects/tree/main/Python/ReflectionKiJournal)** – Journal App mit integrierter wöchentlicher KI Zusammenfassung (PySide6)
-- **[Pomodoro App [W.I.P]](https://github.com/Phil-gy/Projects/tree/main/Python/Pomodoro%20App/src)** – Eine Pomodoro Desktopapp mit integrierten Klausurenplaner und Musikplayer (PySide6)
+- **[Pomodoro App](https://github.com/Phil-gy/Projects/tree/main/Python/Pomodoro%20App)** – Eine Pomodoro Desktopapp mit integrierten Klausurenplaner und Musikplayer (PySide6)
 - **[Learning Hub](Python/Learning%20Hub)** – Fokus-App mit Pomodoro-Timer und Motivationselementen (PySide6)
 - **[Calculator App](Python/Calculator%20App)** – Einfache Taschenrechner-App mit GUI (PySide6)
 - **[Life Point Counter](Python/Life%20Point%20Counter)** – Lebenspunkte-Zähler für Kartenspiele (PySide6)
