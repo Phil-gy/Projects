@@ -1,16 +1,15 @@
 # Pomodoro App
 
-A simple Pomodoro app built with **Python + PySide6** .  
-Features include the classical pomodoro timer with the automatic swtich between the work and break mode.
-TODO:
--- Add a music player with different tracks 
----
+A Pomodoro app built with **Python + PySide6** .  
 
+![Screenshot](assets/preview1.png)
+![Screenshot](assets/preview2.png)
+![Screenshot](assets/preview3.png)
 ## Features
 
-- Pomodoro timer (start / pause / reset)  
-- Clean, minimal UI  
-
+- The classical pomodoro timer with the automatic swtich between the work and break mode.
+- A music player with built in ASMR sounds like for example rain
+- A calender to store the upcoming exams in, with a built in reminder on the front page in how many days the event takes place
 ---
 
 ## Installation & Usage
