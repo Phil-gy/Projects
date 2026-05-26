@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlmodel
+recipe-scrapers
+requests
+psycopg2-binary
