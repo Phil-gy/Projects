@@ -1,0 +1,19 @@
+# generic Python cruft
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# venvs
+.venv/
+venv/
+
+# build artifacts (all projects)
+build/
+dist/
+*.spec
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

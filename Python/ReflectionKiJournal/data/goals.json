@@ -1,0 +1,14 @@
+[
+    {
+        "text": "Goal 1",
+        "done": true
+    },
+    {
+        "text": "Goal 2",
+        "done": true
+    },
+    {
+        "text": "Goal 3",
+        "done": false
+    }
+]
