@@ -33,6 +33,33 @@ def get_recipe_by_id(session: Session, recipe_id: int) -> Recipe | None:
     return session.get(Recipe, recipe_id)
 
 
+def update_recipe(
+    session: Session,
+    recipe_id: int,
+    recipe_data: RecipeCreate
+) -> Recipe | None:
+    recipe = session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return None
+
+    recipe.title = recipe_data.title
+    recipe.source_url = recipe_data.source_url
+    recipe.image_url = recipe_data.image_url
+    recipe.servings = recipe_data.servings
+    recipe.total_time = recipe_data.total_time
+    recipe.ingredients = json.dumps(recipe_data.ingredients, ensure_ascii=False)
+    recipe.instructions = json.dumps(recipe_data.instructions, ensure_ascii=False)
+    recipe.category = recipe_data.category
+    recipe.notes = recipe_data.notes
+
+    session.add(recipe)
+    session.commit()
+    session.refresh(recipe)
+
+    return recipe
+
+
 def delete_recipe(session: Session, recipe_id: int) -> bool:
     recipe = session.get(Recipe, recipe_id)
 

@@ -75,3 +75,44 @@ export async function getRecipes(): Promise<Recipe[]> {
 
   return response.json();
 }
+
+export async function getRecipe(id: string): Promise<Recipe> {
+  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not load recipe");
+  }
+
+  return response.json();
+}
+
+export async function updateRecipe(
+  id: number,
+  recipe: RecipeDraft
+): Promise<Recipe> {
+  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(recipe),
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not update recipe");
+  }
+
+  return response.json();
+}
+
+export async function deleteRecipe(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not delete recipe");
+  }
+}

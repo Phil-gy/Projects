@@ -9,6 +9,7 @@ from app.crud import (
     create_recipe,
     get_all_recipes,
     get_recipe_by_id,
+    update_recipe,
     delete_recipe,
     recipe_to_read,
 )
@@ -21,17 +22,14 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-
         "https://www.rabeasrezepte.de",
         "https://rabeasrezepte.de",
-
-        "http://www.rabeasrezepte.de",
-        "http://rabeasrezepte.de",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("startup")
 def on_startup():
@@ -41,6 +39,7 @@ def on_startup():
 @app.get("/")
 def root():
     return {"message": "Recipe Collector API is running"}
+
 
 @app.post("/recipes/scrape", response_model=RecipeCreate)
 def scrape_recipe(request: ScrapeRequest):
@@ -52,6 +51,7 @@ def scrape_recipe(request: ScrapeRequest):
             status_code=400,
             detail=f"Could not scrape recipe: {str(error)}"
         )
+
 
 @app.post("/recipes", response_model=RecipeRead)
 def add_recipe(
@@ -74,6 +74,20 @@ def read_recipe(
     session: Session = Depends(get_session)
 ):
     recipe = get_recipe_by_id(session, recipe_id)
+
+    if recipe is None:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    return recipe_to_read(recipe)
+
+
+@app.put("/recipes/{recipe_id}", response_model=RecipeRead)
+def edit_recipe(
+    recipe_id: int,
+    recipe_data: RecipeCreate,
+    session: Session = Depends(get_session)
+):
+    recipe = update_recipe(session, recipe_id, recipe_data)
 
     if recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found")
