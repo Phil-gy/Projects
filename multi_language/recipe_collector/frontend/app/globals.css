@@ -764,3 +764,64 @@ h1 {
     width: 100%;
   }
 }
+
+.homeRecipePreview {
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.homeRecipePreview:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 34px 90px rgba(15, 23, 42, 0.18);
+}
+
+.homeRecipeImage,
+.homeRecipePlaceholder {
+  width: 100%;
+  height: 360px;
+}
+
+.homeRecipeImage {
+  display: block;
+  object-fit: cover;
+}
+
+.homeRecipePlaceholder {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 35%),
+    #fff7ed;
+}
+
+.homeRecipePlaceholder span {
+  font-size: 72px;
+}
+
+.homeRecipeContent {
+  padding: 28px;
+}
+
+.homeRecipeContent h2 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+@media (max-width: 700px) {
+  .homeRecipeImage,
+  .homeRecipePlaceholder {
+    height: 240px;
+  }
+
+  .homeRecipeContent {
+    padding: 22px;
+  }
+
+  .homeRecipeContent h2 {
+    font-size: 28px;
+  }
+}
