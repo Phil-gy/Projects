@@ -2,7 +2,7 @@ import json
 from sqlmodel import Session, select
 from app.models import Recipe
 from app.schemas import RecipeCreate, RecipeRead
-
+from app.models import Recipe, RecipeImage
 
 def create_recipe(session: Session, recipe_data: RecipeCreate) -> Recipe:
     recipe = Recipe(
@@ -84,3 +84,95 @@ def recipe_to_read(recipe: Recipe) -> RecipeRead:
         category=recipe.category,
         notes=recipe.notes,
     )
+
+def add_recipe_image(
+    session: Session,
+    recipe_id: int,
+    image_url: str,
+    public_id: str | None,
+) -> RecipeImage | None:
+    recipe = session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return None
+
+    existing_images = session.exec(
+        select(RecipeImage).where(RecipeImage.recipe_id == recipe_id)
+    ).all()
+
+    is_first_image = len(existing_images) == 0
+
+    image = RecipeImage(
+        recipe_id=recipe_id,
+        image_url=image_url,
+        public_id=public_id,
+        is_cover=is_first_image,
+    )
+
+    session.add(image)
+
+    if is_first_image:
+        recipe.image_url = image_url
+        session.add(recipe)
+
+    session.commit()
+    session.refresh(image)
+
+    return image
+
+
+def get_recipe_images(session: Session, recipe_id: int) -> list[RecipeImage]:
+    statement = (
+        select(RecipeImage)
+        .where(RecipeImage.recipe_id == recipe_id)
+        .order_by(RecipeImage.created_at.desc())
+    )
+
+    return list(session.exec(statement).all())
+
+
+def set_cover_image(
+    session: Session,
+    recipe_id: int,
+    image_id: int,
+) -> RecipeImage | None:
+    recipe = session.get(Recipe, recipe_id)
+    selected_image = session.get(RecipeImage, image_id)
+
+    if recipe is None or selected_image is None:
+        return None
+
+    if selected_image.recipe_id != recipe_id:
+        return None
+
+    images = session.exec(
+        select(RecipeImage).where(RecipeImage.recipe_id == recipe_id)
+    ).all()
+
+    for image in images:
+        image.is_cover = image.id == image_id
+        session.add(image)
+
+    recipe.image_url = selected_image.image_url
+    session.add(recipe)
+
+    session.commit()
+    session.refresh(selected_image)
+
+    return selected_image
+
+
+def delete_recipe_image(
+    session: Session,
+    recipe_id: int,
+    image_id: int,
+) -> RecipeImage | None:
+    image = session.get(RecipeImage, image_id)
+
+    if image is None or image.recipe_id != recipe_id:
+        return None
+
+    session.delete(image)
+    session.commit()
+
+    return image

@@ -37,3 +37,15 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     token: str
+
+
+from datetime import datetime
+
+
+class RecipeImageRead(BaseModel):
+    id: int
+    recipe_id: int
+    image_url: str
+    public_id: Optional[str] = None
+    is_cover: bool
+    created_at: datetime
