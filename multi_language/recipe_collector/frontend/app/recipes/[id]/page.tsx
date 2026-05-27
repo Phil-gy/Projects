@@ -275,7 +275,7 @@ export default function RecipeDetailPage() {
     <main className="appPage">
       <nav className="topNav">
         <Link href="/" className="brandLink">
-          Recipe Collector
+          Rabeas Recipes
         </Link>
 
         <div className="navLinks">
