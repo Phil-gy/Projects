@@ -1,5 +1,6 @@
 "use client";
 
+import { isLoggedIn } from "@/lib/auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -20,12 +21,14 @@ export default function RecipeDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
+    setAdmin(isLoggedIn());
     async function loadRecipe() {
       try {
         const loadedRecipe = await getRecipe(id);
-
+        
         setRecipe(loadedRecipe);
         setDraft({
           title: loadedRecipe.title,
@@ -194,27 +197,31 @@ export default function RecipeDetailPage() {
                 </section>
               )}
 
-              <div className="recipeActionRow">
+            <div className="recipeActionRow">
+              {admin && (
                 <button
                   onClick={() => setIsEditing(true)}
                   className="primaryButton"
                 >
                   Edit Recipe
                 </button>
+              )}
 
-                <a
-                  href={recipe.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="secondaryButton"
-                >
-                  Open Original
-                </a>
+              <a
+                href={recipe.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="secondaryButton"
+              >
+                Open Original
+              </a>
 
+              {admin && (
                 <button onClick={handleDelete} className="dangerButton">
                   Delete
                 </button>
-              </div>
+              )}
+            </div>
             </>
           ) : (
             <>
@@ -303,3 +310,4 @@ export default function RecipeDetailPage() {
     </main>
   );
 }
+

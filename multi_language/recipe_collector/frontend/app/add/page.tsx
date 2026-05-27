@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RecipeDraft, scrapeRecipe, saveRecipe } from "@/lib/api";
+import { isLoggedIn } from "@/lib/auth";
 
 export default function AddRecipePage() {
   const [url, setUrl] = useState("");
@@ -10,6 +11,24 @@ export default function AddRecipePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      window.location.href = "/login";
+      return;
+    }
+
+    setAllowed(true);
+  }, []);
+
+  if (!allowed) {
+    return (
+      <main className="appPage">
+        <p>Redirecting to login...</p>
+      </main>
+    );
+  }
   async function handleScrape() {
     try {
       setLoading(true);

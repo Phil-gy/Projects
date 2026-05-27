@@ -825,3 +825,13 @@ h1 {
     font-size: 28px;
   }
 }
+
+.loginPanel {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+}

@@ -1,3 +1,5 @@
+import { getToken } from "./auth";
+
 export type Recipe = {
   id: number;
   title: string;
@@ -26,12 +28,42 @@ export type RecipeDraft = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
-export async function scrapeRecipe(url: string): Promise<RecipeDraft> {
-  const response = await fetch(`${API_BASE_URL}/recipes/scrape`, {
+function getAuthHeaders(): HeadersInit {
+  const token = getToken();
+
+  if (!token) {
+    return {
+      "Content-Type": "application/json",
+    };
+  }
+
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+export async function loginAdmin(password: string): Promise<string> {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Wrong password");
+  }
+
+  const data = await response.json();
+  return data.token;
+}
+
+export async function scrapeRecipe(url: string): Promise<RecipeDraft> {
+  const response = await fetch(`${API_BASE_URL}/recipes/scrape`, {
+    method: "POST",
+    headers: getAuthHeaders(),
     body: JSON.stringify({ url }),
   });
 
@@ -51,9 +83,7 @@ export async function scrapeRecipe(url: string): Promise<RecipeDraft> {
 export async function saveRecipe(recipe: RecipeDraft): Promise<Recipe> {
   const response = await fetch(`${API_BASE_URL}/recipes`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(recipe),
   });
 
@@ -77,12 +107,17 @@ export async function getRecipes(): Promise<Recipe[]> {
 }
 
 export async function getRecipe(id: string): Promise<Recipe> {
-  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+  const url = `${API_BASE_URL}/recipes/${id}`;
+
+  const response = await fetch(url, {
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error("Could not load recipe");
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `Could not load recipe. Status: ${response.status}. URL: ${url}. ${errorText}`,
+    );
   }
 
   return response.json();
@@ -90,13 +125,11 @@ export async function getRecipe(id: string): Promise<Recipe> {
 
 export async function updateRecipe(
   id: number,
-  recipe: RecipeDraft
+  recipe: RecipeDraft,
 ): Promise<Recipe> {
   const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(recipe),
   });
 
@@ -110,6 +143,7 @@ export async function updateRecipe(
 export async function deleteRecipe(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {

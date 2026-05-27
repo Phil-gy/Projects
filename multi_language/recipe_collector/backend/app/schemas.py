@@ -29,3 +29,11 @@ class RecipeRead(BaseModel):
 
 class ScrapeRequest(BaseModel):
     url: str
+
+
+class LoginRequest(BaseModel):
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
