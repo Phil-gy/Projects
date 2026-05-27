@@ -32,9 +32,13 @@ export default function HomePage() {
   }, []);
 
   function chooseRandomRecipe() {
-    if (recipes.length === 0) return;
+    if (recipes.length === 0) {
+      alert("No recipes saved yet.");
+      return;
+    }
 
     if (recipes.length === 1) {
+      alert("You only have one saved recipe, so I cannot choose a different one yet.");
       setRandomRecipe(recipes[0]);
       return;
     }
@@ -74,7 +78,6 @@ export default function HomePage() {
             <button
               type="button"
               onClick={chooseRandomRecipe}
-              disabled={recipes.length === 0}
               className="randomButton"
             >
               Random Recipe

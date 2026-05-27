@@ -7,9 +7,14 @@ import { useParams } from "next/navigation";
 import {
   Recipe,
   RecipeDraft,
+  RecipeImage,
   deleteRecipe,
+  deleteRecipeImage,
   getRecipe,
+  getRecipeImages,
+  setRecipeCoverImage,
   updateRecipe,
+  uploadRecipeImage,
 } from "@/lib/api";
 
 export default function RecipeDetailPage() {
@@ -18,17 +23,22 @@ export default function RecipeDetailPage() {
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
+  const [images, setImages] = useState<RecipeImage[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
     setAdmin(isLoggedIn());
+
     async function loadRecipe() {
       try {
         const loadedRecipe = await getRecipe(id);
-        
+
         setRecipe(loadedRecipe);
         setDraft({
           title: loadedRecipe.title,
@@ -41,6 +51,12 @@ export default function RecipeDetailPage() {
           category: loadedRecipe.category,
           notes: loadedRecipe.notes,
         });
+
+        const loadedImages = await getRecipeImages(loadedRecipe.id);
+        setImages(loadedImages);
+
+        const coverIndex = loadedImages.findIndex((image) => image.is_cover);
+        setSelectedImageIndex(coverIndex >= 0 ? coverIndex : 0);
       } catch (error) {
         console.error(error);
         alert("Recipe could not be loaded.");
@@ -53,6 +69,123 @@ export default function RecipeDetailPage() {
       loadRecipe();
     }
   }, [id]);
+
+  const selectedImage = images[selectedImageIndex];
+
+  function showPreviousImage() {
+    if (images.length === 0) return;
+
+    setSelectedImageIndex((currentIndex) =>
+      currentIndex === 0 ? images.length - 1 : currentIndex - 1
+    );
+  }
+
+  function showNextImage() {
+    if (images.length === 0) return;
+
+    setSelectedImageIndex((currentIndex) =>
+      currentIndex === images.length - 1 ? 0 : currentIndex + 1
+    );
+  }
+
+  async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    if (!recipe) return;
+
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const uploadedImage = await uploadRecipeImage(recipe.id, file);
+      const updatedImages = await getRecipeImages(recipe.id);
+
+      setImages(updatedImages);
+
+      const newImageIndex = updatedImages.findIndex(
+        (image) => image.id === uploadedImage.id
+      );
+
+      if (newImageIndex >= 0) {
+        setSelectedImageIndex(newImageIndex);
+      }
+
+      if (uploadedImage.is_cover) {
+        setRecipe({
+          ...recipe,
+          image_url: uploadedImage.image_url,
+        });
+      }
+
+      alert("Image uploaded!");
+    } catch (error) {
+      console.error(error);
+      alert(
+  error instanceof Error
+    ? error.message
+    : "Image could not be uploaded."
+    );
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  }
+
+  async function handleSetCoverImage() {
+    if (!recipe || !selectedImage) return;
+
+    try {
+      const coverImage = await setRecipeCoverImage(recipe.id, selectedImage.id);
+      const updatedImages = await getRecipeImages(recipe.id);
+
+      setImages(updatedImages);
+      setRecipe({
+        ...recipe,
+        image_url: coverImage.image_url,
+      });
+
+      const coverIndex = updatedImages.findIndex(
+        (image) => image.id === coverImage.id
+      );
+
+      setSelectedImageIndex(coverIndex >= 0 ? coverIndex : 0);
+
+      alert("Cover image updated!");
+    } catch (error) {
+      console.error(error);
+      alert("Cover image could not be updated.");
+    }
+  }
+
+  async function handleDeleteImage() {
+    if (!recipe || !selectedImage) return;
+
+    const confirmed = confirm("Do you really want to delete this image?");
+    if (!confirmed) return;
+
+    try {
+      await deleteRecipeImage(recipe.id, selectedImage.id);
+
+      const updatedImages = await getRecipeImages(recipe.id);
+      setImages(updatedImages);
+      setSelectedImageIndex(0);
+
+      const coverImage = updatedImages.find((image) => image.is_cover);
+
+      if (coverImage) {
+        setRecipe({
+          ...recipe,
+          image_url: coverImage.image_url,
+        });
+      }
+
+      alert("Image deleted!");
+    } catch (error) {
+      console.error(error);
+      alert("Image could not be deleted.");
+    }
+  }
 
   function updateDraftField(field: keyof RecipeDraft, value: string) {
     if (!draft) return;
@@ -153,12 +286,109 @@ export default function RecipeDetailPage() {
 
       <section className="recipeDetailLayout">
         <article className="recipeDetailCard">
-          {recipe.image_url && (
-            <img
-              src={recipe.image_url}
-              alt={recipe.title}
-              className="recipeDetailImage"
-            />
+          {!isEditing && (
+            <section className="recipeImageGallery">
+              {selectedImage ? (
+                <>
+                  <div className="recipeMainImageWrapper">
+                    <img
+                      src={selectedImage.image_url}
+                      alt={recipe.title}
+                      className="recipeGalleryMainImage"
+                    />
+
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={showPreviousImage}
+                          className="galleryArrow galleryArrowLeft"
+                        >
+                          ‹
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={showNextImage}
+                          className="galleryArrow galleryArrowRight"
+                        >
+                          ›
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {images.length > 1 && (
+                    <div className="recipeThumbnailRow">
+                      {images.map((image, index) => (
+                        <button
+                          key={image.id}
+                          type="button"
+                          onClick={() => setSelectedImageIndex(index)}
+                          className="recipeThumbnailButton"
+                        >
+                          <img
+                            src={image.image_url}
+                            alt={`${recipe.title} image ${index + 1}`}
+                            className={
+                              index === selectedImageIndex
+                                ? "recipeThumbnail recipeThumbnailActive"
+                                : "recipeThumbnail"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : recipe.image_url ? (
+                <img
+                  src={recipe.image_url}
+                  alt={recipe.title}
+                  className="recipeGalleryMainImage"
+                />
+              ) : (
+                <div className="recipeImagePlaceholder">
+                  <span>🥘</span>
+                  <p>No pictures yet</p>
+                </div>
+              )}
+
+              {admin && (
+                <div className="galleryAdminControls">
+                  <label className="imageUploadLabel">
+                    {uploading ? "Uploading..." : "Upload picture"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="imageUploadInput"
+                    />
+                  </label>
+
+                  {selectedImage && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSetCoverImage}
+                        className="secondaryButton"
+                      >
+                        Set as cover
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleDeleteImage}
+                        className="dangerButton"
+                      >
+                        Delete picture
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </section>
           )}
 
           {!isEditing ? (
@@ -197,31 +427,31 @@ export default function RecipeDetailPage() {
                 </section>
               )}
 
-            <div className="recipeActionRow">
-              {admin && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="primaryButton"
+              <div className="recipeActionRow">
+                {admin && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="primaryButton"
+                  >
+                    Edit Recipe
+                  </button>
+                )}
+
+                <a
+                  href={recipe.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="secondaryButton"
                 >
-                  Edit Recipe
-                </button>
-              )}
+                  Open Original
+                </a>
 
-              <a
-                href={recipe.source_url}
-                target="_blank"
-                rel="noreferrer"
-                className="secondaryButton"
-              >
-                Open Original
-              </a>
-
-              {admin && (
-                <button onClick={handleDelete} className="dangerButton">
-                  Delete
-                </button>
-              )}
-            </div>
+                {admin && (
+                  <button onClick={handleDelete} className="dangerButton">
+                    Delete Recipe
+                  </button>
+                )}
+              </div>
             </>
           ) : (
             <>
@@ -310,4 +540,3 @@ export default function RecipeDetailPage() {
     </main>
   );
 }
-

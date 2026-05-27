@@ -150,3 +150,98 @@ export async function deleteRecipe(id: number): Promise<void> {
     throw new Error("Could not delete recipe");
   }
 }
+
+export type RecipeImage = {
+  id: number;
+  recipe_id: number;
+  image_url: string;
+  public_id?: string | null;
+  is_cover: boolean;
+  created_at: string;
+};
+
+function getAuthOnlyHeaders(): HeadersInit {
+  const token = getToken();
+
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+export async function getRecipeImages(recipeId: number): Promise<RecipeImage[]> {
+  const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/images`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not load recipe images");
+  }
+
+  return response.json();
+}
+
+export async function uploadRecipeImage(
+  recipeId: number,
+  file: File
+): Promise<RecipeImage> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/images`, {
+    method: "POST",
+    headers: getAuthOnlyHeaders(),
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+
+    const message =
+      errorData?.detail ??
+      `Could not upload image. Status: ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+export async function setRecipeCoverImage(
+  recipeId: number,
+  imageId: number
+): Promise<RecipeImage> {
+  const response = await fetch(
+    `${API_BASE_URL}/recipes/${recipeId}/images/${imageId}/cover`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Could not set cover image");
+  }
+
+  return response.json();
+}
+
+export async function deleteRecipeImage(
+  recipeId: number,
+  imageId: number
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/recipes/${recipeId}/images/${imageId}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Could not delete image");
+  }
+}
