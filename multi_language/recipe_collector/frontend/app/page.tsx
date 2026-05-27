@@ -24,7 +24,7 @@ export default async function HomePage() {
         <div className="heroContent">
           <p className="eyebrow">Private Recipe Library</p>
 
-          <h1>Recipe Collector</h1>
+          <h1>Rabeas Recipes</h1>
 
           <p className="subtitle">
             Save recipes from different websites, extract ingredients and
