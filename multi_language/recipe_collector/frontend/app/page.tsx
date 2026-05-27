@@ -56,7 +56,7 @@ export default function HomePage() {
     <main className="page">
       <section className="hero">
         <div className="heroContent">
-          <p className="eyebrow">Private Recipe Library</p>
+          <p className="eyebrow">Recipe Library for Rabea from Philipp</p>
 
           <h1>Rabeas Recipes</h1>
 
