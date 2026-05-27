@@ -3,7 +3,10 @@ import "./globals.css";
 
 export const metadata = {
   title: "Recipe Collector",
-  description: "Phil.gy Recipe Collector for Rabea",
+  description: "Private recipe organizer",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
