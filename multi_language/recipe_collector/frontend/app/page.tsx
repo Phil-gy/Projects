@@ -1,22 +1,52 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getRecipes, Recipe } from "@/lib/api";
 
-export const dynamic = "force-dynamic";
+export default function HomePage() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [randomRecipe, setRandomRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function HomePage() {
-  let recipes: Recipe[] = [];
+  useEffect(() => {
+    async function loadRecipes() {
+      try {
+        const loadedRecipes = await getRecipes();
+        setRecipes(loadedRecipes);
 
-  try {
-    recipes = await getRecipes();
-  } catch (error) {
-    console.error("Could not load recipes for homepage:", error);
-    recipes = [];
+        if (loadedRecipes.length > 0) {
+          const firstRandomRecipe =
+            loadedRecipes[Math.floor(Math.random() * loadedRecipes.length)];
+
+          setRandomRecipe(firstRandomRecipe);
+        }
+      } catch (error) {
+        console.error("Could not load recipes for homepage:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadRecipes();
+  }, []);
+
+  function chooseRandomRecipe() {
+    if (recipes.length === 0) return;
+
+    if (recipes.length === 1) {
+      setRandomRecipe(recipes[0]);
+      return;
+    }
+
+    let newRandomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+
+    while (randomRecipe && newRandomRecipe.id === randomRecipe.id) {
+      newRandomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+    }
+
+    setRandomRecipe(newRandomRecipe);
   }
-
-  const randomRecipe =
-    recipes.length > 0
-      ? recipes[Math.floor(Math.random() * recipes.length)]
-      : null;
 
   return (
     <main className="page">
@@ -40,6 +70,15 @@ export default async function HomePage() {
             <Link href="/recipes" className="secondaryButton">
               View Recipes
             </Link>
+
+            <button
+              type="button"
+              onClick={chooseRandomRecipe}
+              disabled={recipes.length === 0}
+              className="randomButton"
+            >
+              Random Recipe
+            </button>
           </div>
 
           <div className="featureGrid">
@@ -63,8 +102,20 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {randomRecipe ? (
-          <Link href={`/recipes/${randomRecipe.id}`} className="previewCard homeRecipePreview">
+        {loading ? (
+          <div className="previewCard">
+            <div className="previewHeader">
+              <div>
+                <p className="smallLabel">Loading</p>
+                <h2>Loading random recipe...</h2>
+              </div>
+            </div>
+          </div>
+        ) : randomRecipe ? (
+          <Link
+            href={`/recipes/${randomRecipe.id}`}
+            className="previewCard homeRecipePreview"
+          >
             {randomRecipe.image_url ? (
               <img
                 src={randomRecipe.image_url}
@@ -85,7 +136,9 @@ export default async function HomePage() {
                 {randomRecipe.total_time && (
                   <span>{randomRecipe.total_time} min</span>
                 )}
+
                 {randomRecipe.servings && <span>{randomRecipe.servings}</span>}
+
                 {randomRecipe.category && <span>{randomRecipe.category}</span>}
               </div>
 
@@ -103,10 +156,11 @@ export default async function HomePage() {
 
             <div className="ingredientBox">
               <p>How to start</p>
+
               <ul>
                 <li>Add your first recipe from a URL.</li>
                 <li>Save it to your private collection.</li>
-                <li>Reload the homepage to see a random saved recipe.</li>
+                <li>Then use the random button to discover one.</li>
               </ul>
             </div>
 
