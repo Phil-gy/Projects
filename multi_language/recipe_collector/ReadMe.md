@@ -3,3 +3,4 @@ TODO
 - Random Rezept Knopf hinzufugen
 - Das man Bilder einfügen kann 
 - Calling cards anpassen dass sie Sinn ergeben und nicht so chatgpt esque sind 
+- Eigene Rezepte hinzufügen 
