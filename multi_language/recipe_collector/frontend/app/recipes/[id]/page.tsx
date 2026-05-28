@@ -225,7 +225,7 @@ export default function RecipeDetailPage() {
   function updateRating(value: string) {
     if (!draft) return;
 
-    if (value === "") {
+    if (value.trim() === "") {
       setDraft({
         ...draft,
         rating: null,
@@ -233,7 +233,8 @@ export default function RecipeDetailPage() {
       return;
     }
 
-    const numberValue = Number(value);
+    const normalizedValue = value.replace(",", ".");
+    const numberValue = Number(normalizedValue);
 
     if (Number.isNaN(numberValue)) {
       return;
@@ -527,15 +528,13 @@ export default function RecipeDetailPage() {
 
               <label className="formLabel">Rating 1-10</label>
               <input
-                type="number"
-                min="1"
-                max="10"
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 value={draft.rating ?? ""}
                 onChange={(event) => updateRating(event.target.value)}
                 placeholder="9.5"
                 className="textInput"
-/>
+              />
 
               <label className="formLabel">Ingredients</label>
               <textarea

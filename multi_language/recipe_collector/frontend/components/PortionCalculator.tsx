@@ -10,11 +10,11 @@ type PortionCalculatorProps = {
 function extractServingsNumber(servings?: string | null): number {
   if (!servings) return 2;
 
-  const match = servings.match(/\d+/);
+  const match = servings.match(/\d+(?:[.,]\d+)?/);
 
   if (!match) return 2;
 
-  return Number(match[0]);
+  return Number(match[0].replace(",", "."));
 }
 
 function formatNumber(value: number): string {
@@ -66,16 +66,36 @@ function scaleIngredient(ingredient: string, factor: number): string {
   );
 }
 
+function parsePositiveNumber(value: string): number | null {
+  if (value.trim() === "") return null;
+
+  const parsed = Number(value.replace(",", "."));
+
+  if (Number.isNaN(parsed)) return null;
+  if (parsed <= 0) return null;
+
+  return parsed;
+}
+
 export default function PortionCalculator({
   ingredients,
   servings,
 }: PortionCalculatorProps) {
   const detectedServings = extractServingsNumber(servings);
 
-  const [originalServings, setOriginalServings] = useState(detectedServings);
-  const [targetServings, setTargetServings] = useState(detectedServings);
+  const [originalServingsInput, setOriginalServingsInput] = useState(
+    String(detectedServings)
+  );
 
-  const factor = targetServings / originalServings;
+  const [targetServingsInput, setTargetServingsInput] = useState(
+    String(detectedServings)
+  );
+
+  const originalServings = parsePositiveNumber(originalServingsInput);
+  const targetServings = parsePositiveNumber(targetServingsInput);
+
+  const factor =
+    originalServings && targetServings ? targetServings / originalServings : 1;
 
   const scaledIngredients = useMemo(() => {
     return ingredients.map((ingredient) => scaleIngredient(ingredient, factor));
@@ -94,12 +114,10 @@ export default function PortionCalculator({
         <div>
           <label className="formLabel">Original portions</label>
           <input
-            type="number"
-            min="1"
-            value={originalServings}
-            onChange={(event) =>
-              setOriginalServings(Math.max(1, Number(event.target.value)))
-            }
+            type="text"
+            inputMode="decimal"
+            value={originalServingsInput}
+            onChange={(event) => setOriginalServingsInput(event.target.value)}
             className="textInput"
           />
         </div>
@@ -107,26 +125,30 @@ export default function PortionCalculator({
         <div>
           <label className="formLabel">Wanted portions</label>
           <input
-            type="number"
-            min="1"
-            value={targetServings}
-            onChange={(event) =>
-              setTargetServings(Math.max(1, Number(event.target.value)))
-            }
+            type="text"
+            inputMode="decimal"
+            value={targetServingsInput}
+            onChange={(event) => setTargetServingsInput(event.target.value)}
             className="textInput"
           />
         </div>
       </div>
 
-      <div className="scaledIngredientBox">
-        <p>Scaled ingredients</p>
+      {originalServings && targetServings ? (
+        <div className="scaledIngredientBox">
+          <p>Scaled ingredients</p>
 
-        <ul>
-          {scaledIngredients.map((ingredient, index) => (
-            <li key={index}>{ingredient}</li>
-          ))}
-        </ul>
-      </div>
+          <ul>
+            {scaledIngredients.map((ingredient, index) => (
+              <li key={index}>{ingredient}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="scaledIngredientBox">
+          <p>Please enter valid portion numbers.</p>
+        </div>
+      )}
     </section>
   );
 }
