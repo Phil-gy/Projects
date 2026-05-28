@@ -3,6 +3,7 @@
 import { isLoggedIn } from "@/lib/auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import PortionCalculator from "@/components/PortionCalculator";
 import { useParams } from "next/navigation";
 import {
   Recipe,
@@ -50,6 +51,7 @@ export default function RecipeDetailPage() {
           instructions: loadedRecipe.instructions,
           category: loadedRecipe.category,
           notes: loadedRecipe.notes,
+          rating: loadedRecipe.rating,
         });
 
         const loadedImages = await getRecipeImages(loadedRecipe.id);
@@ -217,6 +219,33 @@ export default function RecipeDetailPage() {
         .split("\n")
         .map((item) => item.trim())
         .filter((item) => item !== ""),
+    });
+  }
+
+  function updateRating(value: string) {
+    if (!draft) return;
+
+    if (value === "") {
+      setDraft({
+        ...draft,
+        rating: null,
+      });
+      return;
+    }
+
+    const numberValue = Number(value);
+
+    if (Number.isNaN(numberValue)) {
+      return;
+    }
+
+    if (numberValue < 1 || numberValue > 10) {
+      return;
+    }
+
+    setDraft({
+      ...draft,
+      rating: numberValue,
     });
   }
 
@@ -396,12 +425,17 @@ export default function RecipeDetailPage() {
               <p className="eyebrow">Recipe Details</p>
               <h1>{recipe.title}</h1>
 
-              <div className="recipeDetailMeta">
-                {recipe.total_time && <span>{recipe.total_time} min</span>}
-                {recipe.servings && <span>{recipe.servings}</span>}
-                {recipe.category && <span>{recipe.category}</span>}
-              </div>
+            <div className="recipeDetailMeta">
+              {recipe.total_time && <span>{recipe.total_time} min</span>}
+              {recipe.servings && <span>{recipe.servings}</span>}
+              {recipe.category && <span>{recipe.category}</span>}
+              {recipe.rating && <span>⭐ {recipe.rating}/10</span>}
+            </div>
 
+            <PortionCalculator
+            ingredients={recipe.ingredients}
+            servings={recipe.servings}
+              />
               <section className="recipeDetailSection">
                 <h2>Ingredients</h2>
                 <ul>
@@ -490,6 +524,18 @@ export default function RecipeDetailPage() {
                   />
                 </div>
               </div>
+
+              <label className="formLabel">Rating 1-10</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                step="0.1"
+                value={draft.rating ?? ""}
+                onChange={(event) => updateRating(event.target.value)}
+                placeholder="9.5"
+                className="textInput"
+/>
 
               <label className="formLabel">Ingredients</label>
               <textarea

@@ -1,8 +1,9 @@
 import json
 from sqlmodel import Session, select
-from app.models import Recipe
-from app.schemas import RecipeCreate, RecipeRead
+
 from app.models import Recipe, RecipeImage
+from app.schemas import RecipeCreate, RecipeRead
+
 
 def create_recipe(session: Session, recipe_data: RecipeCreate) -> Recipe:
     recipe = Recipe(
@@ -15,6 +16,7 @@ def create_recipe(session: Session, recipe_data: RecipeCreate) -> Recipe:
         instructions=json.dumps(recipe_data.instructions, ensure_ascii=False),
         category=recipe_data.category,
         notes=recipe_data.notes,
+        rating=recipe_data.rating,
     )
 
     session.add(recipe)
@@ -36,7 +38,7 @@ def get_recipe_by_id(session: Session, recipe_id: int) -> Recipe | None:
 def update_recipe(
     session: Session,
     recipe_id: int,
-    recipe_data: RecipeCreate
+    recipe_data: RecipeCreate,
 ) -> Recipe | None:
     recipe = session.get(Recipe, recipe_id)
 
@@ -52,6 +54,7 @@ def update_recipe(
     recipe.instructions = json.dumps(recipe_data.instructions, ensure_ascii=False)
     recipe.category = recipe_data.category
     recipe.notes = recipe_data.notes
+    recipe.rating = recipe_data.rating
 
     session.add(recipe)
     session.commit()
@@ -68,6 +71,7 @@ def delete_recipe(session: Session, recipe_id: int) -> bool:
 
     session.delete(recipe)
     session.commit()
+
     return True
 
 
@@ -83,7 +87,9 @@ def recipe_to_read(recipe: Recipe) -> RecipeRead:
         instructions=json.loads(recipe.instructions),
         category=recipe.category,
         notes=recipe.notes,
+        rating=recipe.rating,
     )
+
 
 def add_recipe_image(
     session: Session,

@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -12,6 +13,7 @@ class RecipeCreate(BaseModel):
     instructions: list[str]
     category: Optional[str] = None
     notes: Optional[str] = None
+    rating: Optional[float] = None
 
 
 class RecipeRead(BaseModel):
@@ -25,6 +27,7 @@ class RecipeRead(BaseModel):
     instructions: list[str]
     category: Optional[str] = None
     notes: Optional[str] = None
+    rating: Optional[float] = None
 
 
 class ScrapeRequest(BaseModel):
@@ -37,9 +40,6 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     token: str
-
-
-from datetime import datetime
 
 
 class RecipeImageRead(BaseModel):

@@ -9,6 +9,7 @@ export type Recipe = {
   total_time?: number | null;
   ingredients: string[];
   instructions: string[];
+  rating?: number | null;
   category?: string | null;
   notes?: string | null;
 };
@@ -21,6 +22,7 @@ export type RecipeDraft = {
   total_time?: number | null;
   ingredients: string[];
   instructions: string[];
+  rating?: number | null;
   category?: string | null;
   notes?: string | null;
 };

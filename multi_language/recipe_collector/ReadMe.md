@@ -1,12 +1,8 @@
 TODO
-- Favorites
 - Kategorien/ Filter
 - Suchfunktion bei recipes
 - random recie als eiegen seite
 - Rating für jedes Rezept
-- Portionsrechnr !!!!!!
-
-
 
 
 
@@ -18,4 +14,4 @@ DONE
 - Ben bild hinzufügen               check 
  - Eigene Rezepte hinzufügen    CHECK
 - Calling cards anpassen dass sie Sinn ergeben und nicht so chatgpt esque sind      check
-
+- Portionsrechnr !!!!!! CHECK

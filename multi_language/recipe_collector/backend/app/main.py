@@ -7,7 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 
-from app.database import create_db_and_tables, get_session
+from app.database import create_db_and_tables, get_session, migrate_database
 from app.schemas import (
     RecipeCreate,
     RecipeRead,
@@ -56,6 +56,7 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    migrate_database()
 
 
 @app.get("/")

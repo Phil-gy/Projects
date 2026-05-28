@@ -14,6 +14,7 @@ class Recipe(SQLModel, table=True):
     instructions: str
     category: Optional[str] = None
     notes: Optional[str] = None
+    rating: Optional[float] = None
 
 
 class RecipeImage(SQLModel, table=True):
