@@ -24,6 +24,7 @@ export default function RecipeDetailPage() {
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
+  const [ratingInput, setRatingInput] = useState("");
   const [images, setImages] = useState<RecipeImage[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -53,6 +54,12 @@ export default function RecipeDetailPage() {
           notes: loadedRecipe.notes,
           rating: loadedRecipe.rating,
         });
+
+        setRatingInput(
+        loadedRecipe.rating !== null && loadedRecipe.rating !== undefined
+          ? String(loadedRecipe.rating).replace(".", ",")
+          : ""
+      );
 
         const loadedImages = await getRecipeImages(loadedRecipe.id);
         setImages(loadedImages);
@@ -222,33 +229,40 @@ export default function RecipeDetailPage() {
     });
   }
 
-  function updateRating(value: string) {
-    if (!draft) return;
+function updateRating(value: string) {
+  if (!draft) return;
 
-    if (value.trim() === "") {
-      setDraft({
-        ...draft,
-        rating: null,
-      });
-      return;
-    }
+  setRatingInput(value);
 
-    const normalizedValue = value.replace(",", ".");
-    const numberValue = Number(normalizedValue);
-
-    if (Number.isNaN(numberValue)) {
-      return;
-    }
-
-    if (numberValue < 1 || numberValue > 10) {
-      return;
-    }
-
+  if (value.trim() === "") {
     setDraft({
       ...draft,
-      rating: numberValue,
+      rating: null,
     });
+    return;
   }
+
+  const normalizedValue = value.replace(",", ".");
+
+  if (normalizedValue.endsWith(".")) {
+    return;
+  }
+
+  const numberValue = Number(normalizedValue);
+
+  if (Number.isNaN(numberValue)) {
+    return;
+  }
+
+  if (numberValue < 1 || numberValue > 10) {
+    return;
+  }
+
+  setDraft({
+    ...draft,
+    rating: numberValue,
+  });
+}
 
   async function handleSave() {
     if (!recipe || !draft) return;
@@ -530,9 +544,9 @@ export default function RecipeDetailPage() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={draft.rating ?? ""}
+                value={ratingInput}
                 onChange={(event) => updateRating(event.target.value)}
-                placeholder="9.5"
+                placeholder="9,5"
                 className="textInput"
               />
 
