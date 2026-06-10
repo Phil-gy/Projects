@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { RecipeDraft, scrapeRecipe, saveRecipe } from "@/lib/api";
+import {
+  AuthSessionExpiredError,
+  RecipeDraft,
+  scrapeRecipe,
+  saveRecipe,
+} from "@/lib/api";
 import { isLoggedIn } from "@/lib/auth";
 
 const emptyRecipe: RecipeDraft = {
@@ -24,9 +29,42 @@ export default function AddRecipePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  function redirectToLogin(nextPath?: string) {
+    const fallbackPath =
+      typeof window === "undefined"
+        ? "/add"
+        : `${window.location.pathname}${window.location.search}`;
+
+    window.location.href = `/login?next=${encodeURIComponent(
+      nextPath ?? fallbackPath,
+    )}`;
+  }
+
+  function handleAuthError(error: unknown, retryUrl?: string): boolean {
+    if (!(error instanceof AuthSessionExpiredError)) {
+      return false;
+    }
+
+    alert("Your admin login has expired. Please log in again.");
+
+    const nextPath = retryUrl
+      ? `/add?url=${encodeURIComponent(retryUrl)}`
+      : undefined;
+
+    redirectToLogin(nextPath);
+    return true;
+  }
+
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const recipeUrl = searchParams.get("url");
+
+    if (recipeUrl) {
+      setUrl(recipeUrl);
+    }
+
     if (!isLoggedIn()) {
-      window.location.href = "/login";
+      redirectToLogin();
       return;
     }
 
@@ -53,6 +91,11 @@ export default function AddRecipePage() {
       setDraft(scrapedRecipe);
     } catch (error) {
       console.error(error);
+
+      if (handleAuthError(error, url.trim())) {
+        return;
+      }
+
       alert(
         error instanceof Error
           ? error.message
@@ -137,6 +180,11 @@ export default function AddRecipePage() {
       window.location.href = `/recipes/${savedRecipe.id}`;
     } catch (error) {
       console.error(error);
+
+      if (handleAuthError(error)) {
+        return;
+      }
+
       alert("Recipe could not be saved.");
     } finally {
       setSaving(false);

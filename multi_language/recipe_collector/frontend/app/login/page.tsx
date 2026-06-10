@@ -14,7 +14,14 @@ export default function LoginPage() {
       setLoading(true);
       const token = await loginAdmin(password);
       saveToken(token);
-      window.location.href = "/recipes";
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const nextPath = searchParams.get("next");
+
+      window.location.href =
+        nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+          ? nextPath
+          : "/recipes";
     } catch (error) {
       alert("Wrong password.");
     } finally {

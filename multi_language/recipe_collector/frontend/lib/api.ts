@@ -1,4 +1,4 @@
-import { getToken } from "./auth";
+import { getToken, removeToken } from "./auth";
 
 export type Recipe = {
   id: number;
@@ -29,6 +29,37 @@ export type RecipeDraft = {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+export class AuthSessionExpiredError extends Error {
+  constructor() {
+    super("Your admin login has expired. Please log in again.");
+    this.name = "AuthSessionExpiredError";
+  }
+}
+
+async function getErrorMessage(
+  response: Response,
+  fallbackMessage: string,
+): Promise<string> {
+  const errorData = await response.json().catch(() => null);
+
+  return errorData?.detail ?? fallbackMessage;
+}
+
+function throwIfAuthFailed(response: Response, message: string): void {
+  if (response.status !== 401) {
+    return;
+  }
+
+  if (
+    message === "Token expired" ||
+    message === "Invalid token" ||
+    message === "Missing authorization header"
+  ) {
+    removeToken();
+    throw new AuthSessionExpiredError();
+  }
+}
 
 function getAuthHeaders(): HeadersInit {
   const token = getToken();
@@ -70,12 +101,12 @@ export async function scrapeRecipe(url: string): Promise<RecipeDraft> {
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
+    const message = await getErrorMessage(
+      response,
+      `Could not scrape recipe. Status: ${response.status}`,
+    );
 
-    const message =
-      errorData?.detail ??
-      `Could not scrape recipe. Status: ${response.status}`;
-
+    throwIfAuthFailed(response, message);
     throw new Error(message);
   }
 
@@ -90,7 +121,10 @@ export async function saveRecipe(recipe: RecipeDraft): Promise<Recipe> {
   });
 
   if (!response.ok) {
-    throw new Error("Could not save recipe");
+    const message = await getErrorMessage(response, "Could not save recipe");
+
+    throwIfAuthFailed(response, message);
+    throw new Error(message);
   }
 
   return response.json();
@@ -136,7 +170,10 @@ export async function updateRecipe(
   });
 
   if (!response.ok) {
-    throw new Error("Could not update recipe");
+    const message = await getErrorMessage(response, "Could not update recipe");
+
+    throwIfAuthFailed(response, message);
+    throw new Error(message);
   }
 
   return response.json();
@@ -149,7 +186,10 @@ export async function deleteRecipe(id: number): Promise<void> {
   });
 
   if (!response.ok) {
-    throw new Error("Could not delete recipe");
+    const message = await getErrorMessage(response, "Could not delete recipe");
+
+    throwIfAuthFailed(response, message);
+    throw new Error(message);
   }
 }
 
@@ -200,12 +240,12 @@ export async function uploadRecipeImage(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
+    const message = await getErrorMessage(
+      response,
+      `Could not upload image. Status: ${response.status}`,
+    );
 
-    const message =
-      errorData?.detail ??
-      `Could not upload image. Status: ${response.status}`;
-
+    throwIfAuthFailed(response, message);
     throw new Error(message);
   }
 
@@ -225,7 +265,13 @@ export async function setRecipeCoverImage(
   );
 
   if (!response.ok) {
-    throw new Error("Could not set cover image");
+    const message = await getErrorMessage(
+      response,
+      "Could not set cover image",
+    );
+
+    throwIfAuthFailed(response, message);
+    throw new Error(message);
   }
 
   return response.json();
@@ -244,6 +290,9 @@ export async function deleteRecipeImage(
   );
 
   if (!response.ok) {
-    throw new Error("Could not delete image");
+    const message = await getErrorMessage(response, "Could not delete image");
+
+    throwIfAuthFailed(response, message);
+    throw new Error(message);
   }
 }
