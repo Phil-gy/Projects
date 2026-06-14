@@ -139,7 +139,7 @@ def scrape_instagram_recipe(html: str, url: str) -> dict:
         )
 
     title = extract_instagram_title(soup, caption)
-    image_url = extract_instagram_image_url(soup)
+    image_url = extract_instagram_image_url(soup, html)
     ingredients, instructions, notes = parse_instagram_recipe_caption(caption, title)
 
     if not ingredients and not instructions:
@@ -243,7 +243,15 @@ def extract_instagram_title(soup: BeautifulSoup, caption: str) -> str:
     return "Instagram Recipe"
 
 
-def extract_instagram_image_url(soup: BeautifulSoup) -> str | None:
+def extract_instagram_image_url(soup: BeautifulSoup, html: str) -> str | None:
+    for image_url in extract_instagram_image_urls_from_scripts(html):
+        if is_usable_instagram_recipe_image_url(image_url):
+            return image_url
+
+    for image_url in extract_instagram_image_urls_from_page(soup):
+        if is_usable_instagram_recipe_image_url(image_url):
+            return image_url
+
     for selector in [
         ("property", "og:image"),
         ("name", "twitter:image"),
@@ -255,6 +263,93 @@ def extract_instagram_image_url(soup: BeautifulSoup) -> str | None:
             return image_url
 
     return None
+
+
+def extract_instagram_image_urls_from_scripts(html: str) -> list[str]:
+    image_urls = []
+    patterns = [
+        r'"display_url"\s*:\s*"((?:\\.|[^"\\])*)"',
+        r'"thumbnail_src"\s*:\s*"((?:\\.|[^"\\])*)"',
+        r'"thumbnail_url"\s*:\s*"((?:\\.|[^"\\])*)"',
+        r'"url"\s*:\s*"((?:\\.|[^"\\])*)"',
+    ]
+
+    for pattern in patterns:
+        for match in re.finditer(pattern, html):
+            image_url = clean_instagram_image_url(match.group(1))
+
+            if image_url:
+                image_urls.append(image_url)
+
+    return deduplicate_strings(image_urls)
+
+
+def extract_instagram_image_urls_from_page(soup: BeautifulSoup) -> list[str]:
+    image_urls = []
+
+    for image in soup.find_all("img"):
+        src = image.get("src")
+
+        if src:
+            image_urls.append(clean_instagram_image_url(src))
+
+        srcset = image.get("srcset")
+
+        if not srcset:
+            continue
+
+        for srcset_part in srcset.split(","):
+            srcset_url = srcset_part.strip().split(" ")[0]
+
+            if srcset_url:
+                image_urls.append(clean_instagram_image_url(srcset_url))
+
+    return deduplicate_strings(image_urls)
+
+
+def clean_instagram_image_url(image_url: str) -> str:
+    image_url = decode_json_string(image_url)
+    image_url = unescape(image_url)
+    image_url = image_url.replace("\\/", "/")
+    image_url = clean_text(image_url)
+
+    return image_url
+
+
+def is_usable_instagram_recipe_image_url(image_url: str) -> bool:
+    if not image_url.startswith("http"):
+        return False
+
+    lowered = image_url.lower()
+
+    if not any(extension in lowered for extension in [".jpg", ".jpeg", ".png", ".webp"]):
+        return False
+
+    blocked_fragments = [
+        "profile_pic",
+        "profilepic",
+        "s150x150",
+        "s320x320",
+        "emoji",
+        "static",
+        "sprite",
+    ]
+
+    return not any(fragment in lowered for fragment in blocked_fragments)
+
+
+def deduplicate_strings(items: list[str]) -> list[str]:
+    seen = set()
+    deduplicated = []
+
+    for item in items:
+        if not item or item in seen:
+            continue
+
+        seen.add(item)
+        deduplicated.append(item)
+
+    return deduplicated
 
 
 def get_meta_content(soup: BeautifulSoup, key: str, value: str) -> str:
