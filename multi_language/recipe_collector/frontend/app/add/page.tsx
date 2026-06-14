@@ -14,6 +14,7 @@ const emptyRecipe: RecipeDraft = {
   title: "",
   source_url: "",
   image_url: "",
+  image_options: [],
   servings: "",
   total_time: null,
   ingredients: [],
@@ -126,6 +127,15 @@ export default function AddRecipePage() {
     setDraft({
       ...draft,
       [field]: value,
+    });
+  }
+
+  function chooseImageOption(imageUrl: string) {
+    if (!draft) return;
+
+    setDraft({
+      ...draft,
+      image_url: imageUrl,
     });
   }
 
@@ -288,6 +298,26 @@ export default function AddRecipePage() {
                     : "manualRecipePreviewImage"
                 }
               />
+            )}
+
+            {draft.image_options && draft.image_options.length > 1 && (
+              <div className="scrapedImageOptions">
+                {draft.image_options.map((imageUrl) => (
+                  <button
+                    key={imageUrl}
+                    type="button"
+                    onClick={() => chooseImageOption(imageUrl)}
+                    className={
+                      imageUrl === draft.image_url
+                        ? "scrapedImageOption scrapedImageOptionActive"
+                        : "scrapedImageOption"
+                    }
+                    aria-label="Choose this scraped image"
+                  >
+                    <img src={imageUrl} alt="" />
+                  </button>
+                ))}
+              </div>
             )}
 
             <div className="twoColumnForm">

@@ -14,6 +14,7 @@ class RecipeCreate(BaseModel):
     category: Optional[str] = None
     notes: Optional[str] = None
     rating: Optional[float] = None
+    image_options: Optional[list[str]] = None
 
 
 class RecipeRead(BaseModel):

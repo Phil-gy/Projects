@@ -139,7 +139,8 @@ def scrape_instagram_recipe(html: str, url: str) -> dict:
         )
 
     title = extract_instagram_title(soup, caption)
-    image_url = extract_instagram_image_url(soup, html)
+    image_options = extract_instagram_image_options(soup, html)
+    image_url = image_options[0] if image_options else None
     ingredients, instructions, notes = parse_instagram_recipe_caption(caption, title)
 
     if not ingredients and not instructions:
@@ -158,6 +159,7 @@ def scrape_instagram_recipe(html: str, url: str) -> dict:
         "instructions": instructions,
         "category": "Instagram",
         "notes": notes,
+        "image_options": image_options,
     }
 
 
@@ -244,13 +246,19 @@ def extract_instagram_title(soup: BeautifulSoup, caption: str) -> str:
 
 
 def extract_instagram_image_url(soup: BeautifulSoup, html: str) -> str | None:
-    for image_url in extract_instagram_image_urls_from_scripts(html):
-        if is_usable_instagram_recipe_image_url(image_url):
-            return image_url
+    image_options = extract_instagram_image_options(soup, html)
 
-    for image_url in extract_instagram_image_urls_from_page(soup):
-        if is_usable_instagram_recipe_image_url(image_url):
-            return image_url
+    if image_options:
+        return image_options[0]
+
+    return None
+
+
+def extract_instagram_image_options(soup: BeautifulSoup, html: str) -> list[str]:
+    image_urls = []
+
+    image_urls.extend(extract_instagram_image_urls_from_scripts(html))
+    image_urls.extend(extract_instagram_image_urls_from_page(soup))
 
     for selector in [
         ("property", "og:image"),
@@ -260,9 +268,15 @@ def extract_instagram_image_url(soup: BeautifulSoup, html: str) -> str | None:
         image_url = get_meta_content(soup, selector[0], selector[1])
 
         if image_url:
-            return image_url
+            image_urls.append(clean_instagram_image_url(image_url))
 
-    return None
+    usable_image_urls = [
+        image_url
+        for image_url in deduplicate_strings(image_urls)
+        if is_usable_instagram_recipe_image_url(image_url)
+    ]
+
+    return usable_image_urls[:8]
 
 
 def extract_instagram_image_urls_from_scripts(html: str) -> list[str]:
