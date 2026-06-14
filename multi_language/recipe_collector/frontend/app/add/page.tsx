@@ -22,6 +22,13 @@ const emptyRecipe: RecipeDraft = {
   notes: "",
 };
 
+function isInstagramRecipe(recipe: RecipeDraft): boolean {
+  return (
+    recipe.category?.toLowerCase() === "instagram" ||
+    recipe.source_url.toLowerCase().includes("instagram.com")
+  );
+}
+
 export default function AddRecipePage() {
   const [allowed, setAllowed] = useState(false);
   const [url, setUrl] = useState("");
@@ -275,7 +282,11 @@ export default function AddRecipePage() {
               <img
                 src={draft.image_url}
                 alt={draft.title || "Recipe preview"}
-                className="manualRecipePreviewImage"
+                className={
+                  isInstagramRecipe(draft)
+                    ? "manualRecipePreviewImage instagramRecipeImage"
+                    : "manualRecipePreviewImage"
+                }
               />
             )}
 

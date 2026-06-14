@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getRecipes, Recipe } from "@/lib/api";
 
+function isInstagramRecipe(recipe: Recipe): boolean {
+  return (
+    recipe.category?.toLowerCase() === "instagram" ||
+    recipe.source_url.toLowerCase().includes("instagram.com")
+  );
+}
+
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [randomRecipe, setRandomRecipe] = useState<Recipe | null>(null);
@@ -123,7 +130,11 @@ export default function HomePage() {
               <img
                 src={randomRecipe.image_url}
                 alt={randomRecipe.title}
-                className="homeRecipeImage"
+                className={
+                  isInstagramRecipe(randomRecipe)
+                    ? "homeRecipeImage instagramRecipeImage"
+                    : "homeRecipeImage"
+                }
               />
             ) : (
               <div className="homeRecipePlaceholder">

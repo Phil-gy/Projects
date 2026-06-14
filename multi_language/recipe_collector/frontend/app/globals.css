@@ -896,6 +896,13 @@ h1 {
   margin: 18px 0 8px;
 }
 
+.instagramRecipeImage {
+  height: min(78vh, 780px);
+  max-height: 780px;
+  object-fit: contain;
+  background: #111827;
+}
+
 @media (max-width: 700px) {
   .addRecipeCard {
     padding: 22px;
@@ -1004,6 +1011,12 @@ h1 {
   .galleryAdminControls button {
     width: 100%;
   }
+}
+
+.recipeGalleryMainImage.instagramRecipeImage {
+  height: min(78vh, 780px);
+  object-fit: contain;
+  background: #111827;
 }
 
 .portionCalculator {
@@ -1193,6 +1206,12 @@ h1 {
   height: 230px;
   object-fit: cover;
   display: block;
+}
+
+.recipeCard img.instagramRecipeCardImage,
+.recipeImage.instagramRecipeCardImage {
+  object-fit: contain;
+  background: #111827;
 }
 
 .recipeCardContent {

@@ -18,6 +18,13 @@ import {
   uploadRecipeImage,
 } from "@/lib/api";
 
+function isInstagramRecipe(recipe: Recipe): boolean {
+  return (
+    recipe.category?.toLowerCase() === "instagram" ||
+    recipe.source_url.toLowerCase().includes("instagram.com")
+  );
+}
+
 export default function RecipeDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -338,7 +345,11 @@ function updateRating(value: string) {
                     <img
                       src={selectedImage.image_url}
                       alt={recipe.title}
-                      className="recipeGalleryMainImage"
+                      className={
+                        isInstagramRecipe(recipe)
+                          ? "recipeGalleryMainImage instagramRecipeImage"
+                          : "recipeGalleryMainImage"
+                      }
                     />
 
                     {images.length > 1 && (
@@ -389,7 +400,11 @@ function updateRating(value: string) {
                 <img
                   src={recipe.image_url}
                   alt={recipe.title}
-                  className="recipeGalleryMainImage"
+                  className={
+                    isInstagramRecipe(recipe)
+                      ? "recipeGalleryMainImage instagramRecipeImage"
+                      : "recipeGalleryMainImage"
+                  }
                 />
               ) : (
                 <div className="recipeImagePlaceholder">

@@ -5,6 +5,13 @@ type RecipeCardProps = {
   recipe: Recipe;
 };
 
+function isInstagramRecipe(recipe: Recipe): boolean {
+  return (
+    recipe.category?.toLowerCase() === "instagram" ||
+    recipe.source_url.toLowerCase().includes("instagram.com")
+  );
+}
+
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <article className="recipeCard">
@@ -13,7 +20,11 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <img
             src={recipe.image_url}
             alt={recipe.title}
-            className="recipeImage"
+            className={
+              isInstagramRecipe(recipe)
+                ? "recipeImage instagramRecipeCardImage"
+                : "recipeImage"
+            }
           />
         )}
 
