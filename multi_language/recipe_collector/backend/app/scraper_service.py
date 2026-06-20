@@ -8,23 +8,25 @@ import requests
 from bs4 import BeautifulSoup
 from recipe_scrapers import scrape_html
 
+from app.unit_service import add_unit_conversion_suggestions
+
 
 def scrape_recipe_from_url(url: str) -> dict:
     if not url.startswith("http://") and not url.startswith("https://"):
         raise ValueError("URL must start with http:// or https://")
 
     if is_instagram_url(url):
-        return scrape_instagram_recipe_from_url(url)
+        return add_unit_conversion_suggestions(scrape_instagram_recipe_from_url(url))
 
     html = fetch_html(url)
 
     try:
-        return scrape_with_recipe_scrapers(html, url)
+        return add_unit_conversion_suggestions(scrape_with_recipe_scrapers(html, url))
     except Exception as first_error:
         print("recipe-scrapers failed:", first_error)
 
     try:
-        return scrape_with_json_ld(html, url)
+        return add_unit_conversion_suggestions(scrape_with_json_ld(html, url))
     except Exception as second_error:
         print("JSON-LD fallback failed:", second_error)
 

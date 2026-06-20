@@ -926,6 +926,69 @@ h1 {
   border-color: #9a3412;
 }
 
+.unitSuggestionBox {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #fed7aa;
+  border-radius: 22px;
+  background: #fff7ed;
+}
+
+.unitSuggestionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.unitSuggestionLabel {
+  margin: 0 0 6px;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.unitSuggestionBox h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.unitSuggestionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.unitSuggestionActions .secondaryButton {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+}
+
+.unitWarningList,
+.convertedIngredientList {
+  margin: 16px 0 0;
+  padding-left: 22px;
+  color: #4b5563;
+  line-height: 1.65;
+}
+
+.unitWarningList {
+  color: #9a3412;
+  font-weight: 700;
+}
+
+.convertedIngredientList {
+  padding: 16px 16px 16px 38px;
+  border: 1px solid #fed7aa;
+  border-radius: 18px;
+  background: white;
+}
+
 .instagramRecipeImage {
   height: min(78vh, 780px);
   max-height: 780px;
@@ -936,6 +999,16 @@ h1 {
 @media (max-width: 700px) {
   .addRecipeCard {
     padding: 22px;
+  }
+
+  .unitSuggestionHeader,
+  .unitSuggestionActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .unitSuggestionActions .secondaryButton {
+    width: 100%;
   }
 }
 

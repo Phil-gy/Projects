@@ -15,6 +15,8 @@ const emptyRecipe: RecipeDraft = {
   source_url: "",
   image_url: "",
   image_options: [],
+  converted_ingredients: [],
+  unit_warnings: [],
   servings: "",
   total_time: null,
   ingredients: [],
@@ -28,6 +30,16 @@ function isInstagramRecipe(recipe: RecipeDraft): boolean {
     recipe.category?.toLowerCase() === "instagram" ||
     recipe.source_url.toLowerCase().includes("instagram.com")
   );
+}
+
+function hasUnitSuggestions(recipe: RecipeDraft): boolean {
+  const convertedIngredients = recipe.converted_ingredients ?? [];
+  const unitWarnings = recipe.unit_warnings ?? [];
+  const hasChangedIngredient = convertedIngredients.some(
+    (ingredient, index) => ingredient !== recipe.ingredients[index],
+  );
+
+  return hasChangedIngredient || unitWarnings.length > 0;
 }
 
 export default function AddRecipePage() {
@@ -139,6 +151,27 @@ export default function AddRecipePage() {
     });
   }
 
+  function applyConvertedIngredients() {
+    if (!draft?.converted_ingredients?.length) return;
+
+    setDraft({
+      ...draft,
+      ingredients: draft.converted_ingredients,
+      converted_ingredients: [],
+      unit_warnings: [],
+    });
+  }
+
+  function dismissUnitSuggestions() {
+    if (!draft) return;
+
+    setDraft({
+      ...draft,
+      converted_ingredients: [],
+      unit_warnings: [],
+    });
+  }
+
   function updateTotalTime(value: string) {
     if (!draft) return;
 
@@ -157,6 +190,8 @@ export default function AddRecipePage() {
         .split("\n")
         .map((item) => item.trim())
         .filter((item) => item !== ""),
+      converted_ingredients: [],
+      unit_warnings: [],
     });
   }
 
@@ -363,6 +398,55 @@ export default function AddRecipePage() {
               rows={10}
               className="textArea"
             />
+
+            {hasUnitSuggestions(draft) && (
+              <section className="unitSuggestionBox">
+                <div className="unitSuggestionHeader">
+                  <div>
+                    <p className="unitSuggestionLabel">US units detected</p>
+                    <h3>Conversion suggestion</h3>
+                  </div>
+
+                  <div className="unitSuggestionActions">
+                    {draft.converted_ingredients &&
+                      draft.converted_ingredients.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={applyConvertedIngredients}
+                          className="secondaryButton"
+                        >
+                          Use suggestion
+                        </button>
+                      )}
+
+                    <button
+                      type="button"
+                      onClick={dismissUnitSuggestions}
+                      className="secondaryButton"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+
+                {draft.unit_warnings && draft.unit_warnings.length > 0 && (
+                  <ul className="unitWarningList">
+                    {draft.unit_warnings.map((warning, index) => (
+                      <li key={index}>{warning}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {draft.converted_ingredients &&
+                  draft.converted_ingredients.length > 0 && (
+                    <ul className="convertedIngredientList">
+                      {draft.converted_ingredients.map((ingredient, index) => (
+                        <li key={index}>{ingredient}</li>
+                      ))}
+                    </ul>
+                  )}
+              </section>
+            )}
 
             <label className="formLabel">Instructions</label>
             <textarea

@@ -19,6 +19,8 @@ export type RecipeDraft = {
   source_url: string;
   image_url?: string | null;
   image_options?: string[] | null;
+  converted_ingredients?: string[] | null;
+  unit_warnings?: string[] | null;
   servings?: string | null;
   total_time?: number | null;
   ingredients: string[];
